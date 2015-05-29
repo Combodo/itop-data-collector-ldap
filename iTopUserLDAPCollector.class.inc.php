@@ -38,65 +38,63 @@ class iTopUserLDAPCollector extends Collector
 
    protected function getDatas()
    {
-      $ldapconn = ldap_connect($this->ldaphost, $this->ldapport);
-      if (!$ldapconn) {
+      $rLdapconn = ldap_connect($this->ldaphost, $this->ldapport);
+      if (!$rLdapconn) {
             return false;
       }
-      ldap_set_option($ldapconn, LDAP_OPT_REFERRALS, 0);
-      ldap_set_option($ldapconn, LDAP_OPT_PROTOCOL_VERSION, 3);
-      $bind     = ldap_bind($ldapconn,$this->ldaplogin,$this->ldappassword);
-      $search   = ldap_search($ldapconn, $this->ldapdn, $this->ldapfilter);
-      $list     = ldap_get_entries($ldapconn, $search);
-      ldap_close($ldapconn);
+      ldap_set_option($rLdapconn, LDAP_OPT_REFERRALS, 0);
+      ldap_set_option($rLdapconn, LDAP_OPT_PROTOCOL_VERSION, 3);
+      $rBind     = ldap_bind($rLdapconn,$this->ldaplogin,$this->ldappassword);
+      $rSearch   = ldap_search($rLdapconn, $this->ldapdn, $this->ldapfilter);
+      $rList     = ldap_get_entries($rLdapconn, $rSearch);
+      ldap_close($rLdapconn);
 
-      $iNumberUser = count($list) -1;
+      $iNumberUser = count($rList) -1;
       echo "(USER)Number of entries found on LDAP -> ".$iNumberUser." \n";
-
-      return $list;
+      return $rList;
    }
 
    public function prepare()
    {
-      if (!$datas = $this->getDatas()) return false;
+      if (!$aDatas = $this->getDatas()) return false;
 
-      foreach($datas as $person) {
-         if (isset($person[$this->user_id][0] ) && $person[$this->user_id][0] != "" ) {
+      foreach($aDatas as $aPerson) {
+         if (isset($aPerson[$this->user_id][0] ) && $aPerson[$this->user_id][0] != "" ) {
             // Collecting list of member of group starting with itop-
-               $pattern = $this->itop_group_pattern;
-               $profile_list = '';
+               $sPattern = $this->itop_group_pattern;
+               $sProfile_list = '';
                if ( $this->synchronize_profils != 'no' ) {
-                if (isset($person['memberof']) && ($person['memberof']['count'] != 0))
+                if (isset($aPerson['memberof']) && ($aPerson['memberof']['count'] != 0))
                 {
-                        foreach(  $person['memberof'] as $sMember )
+                        foreach( $aPerson['memberof'] as $sMember )
                         {
-                                 if (preg_match($pattern, $sMember, $aProfile))
+                                 if (preg_match($sPattern, $sMember, $aProfile))
                                  {
-                                         if ($profile_list == '')
+                                         if ($sProfile_list == '')
                                          {
-                                                 $profile_list.='profileid->name:'.$aProfile[1];
+                                                 $sProfile_list.='profileid->name:'.$aProfile[1];
                                          }
                                          else
                                          {
-                                                 $profile_list.='|profileid->name:'.$aProfile[1];
+                                                 $sProfile_list.='|profileid->name:'.$aProfile[1];
                                          }
                                  }
                         }
                 }
                }
-               if ( $profile_list == '')
+               if ( $sProfile_list == '')
                {
-                        $profile_list="profileid->name:".$this->default_profile;
+                        $sProfile_list="profileid->name:".$this->default_profile;
                }
                $this->login_tab[] = array(
-               'primary_key'     => isset($person[$this->user_id][0]) ? utf8_encode($person[$this->user_id][0]) : '',
-               'contactid'       => isset($person[$this->user_contactid][0]) ? utf8_encode($person[$this->user_contactid][0]) : '',
-               'login'           => isset($person[$this->user_id][0]) ? utf8_encode($person[$this->user_id][0]) : '',
-               'language'        => isset($this->default_language) ? utf8_encode($this->default_language) : '',
-               'profile_list'    => utf8_encode($profile_list),
-            );
+                 'primary_key'     => isset($aPerson[$this->user_id][0]) ? $aPerson[$this->user_id][0] : '',
+                 'contactid'       => isset($aPerson[$this->user_contactid][0]) ? $aPerson[$this->user_contactid][0] : '',
+                 'login'           => isset($aPerson[$this->user_id][0]) ? $aPerson[$this->user_id][0] : '',
+                 'language'        => isset($this->default_language) ? $this->default_language : '',
+                 'profile_list'    => $sProfile_list,
+              );
          }
       }
-
       return true;
    }
 
@@ -109,7 +107,6 @@ class iTopUserLDAPCollector extends Collector
 
          return $datas;
       }
-
       return false;
    }
 }

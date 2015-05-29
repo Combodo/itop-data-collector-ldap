@@ -33,7 +33,7 @@
 			"update": "1",
 			"reconcile": "0",
 			"update_policy": "master_locked",
-			"reconciliation_attcode": "employee_number",
+			"reconciliation_attcode": "email",
 			"finalclass": "SynchroAttExtKey",
 			"friendlyname": "contactid"
 		},

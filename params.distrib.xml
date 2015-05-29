@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Default values for parameters. Do NOT alter this file, use params.local.xml instead -->
 <parameters>
-  <synchronize_organization>no</synchronize_organization>
-  <synchronize_profils>no</synchronize_profils>
   <collect_person_only>no</collect_person_only>
-
-
   <ldaphost>localhost</ldaphost>
   <ldapport>389</ldapport>
   <ldapdn>DC=company,DC=com</ldapdn>
   <ldaplogin>CN=ITOP-LDAP,DC=company,DC=com</ldaplogin>
   <ldappassword>password</ldappassword>
-
+<!-- Parameters for Person synchronization -->
   <ldappersonfilter>(objectClass=person)</ldappersonfilter>
   <itop_group_pattern>/^CN=itop-(.*),OU=.*/</itop_group_pattern>
   <person_id>samaccountname</person_id>
@@ -22,12 +18,15 @@
   <person_mobile_phone>mobile</person_mobile_phone>
   <person_function>title</person_function>
   <person_employee_number>employeenumber</person_employee_number>
+  <person_ou>ou</person_ou>
+  <synchronize_organization>no</synchronize_organization>
   <person_default_organisation_id>Demo</person_default_organisation_id>
   <person_default_status>active</person_default_status>
-
+<!-- Parameters for User synchronization -->
   <ldapuserfilter>(&amp;(objectClass=person)(mail=*))</ldapuserfilter>
   <user_id>samaccountname</user_id>
   <user_contactid>mail</user_contactid>
+  <synchronize_profils>no</synchronize_profils>
   <user_default_profile>Portal user</user_default_profile>
   <user_default_language>FR FR</user_default_language>
 </parameters>

@@ -20,7 +20,7 @@ SetupWebPage::AddModule(
 	array(
 		// Identification
 		//
-		'label' => 'iTop LDAP Collector',
+		'label' => 'LDAP Collector',
 		'category' => 'collector',
 
 		// Setup
