@@ -1,33 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Default values for parameters. Do NOT alter this file, use params.local.xml instead -->
 <parameters>
-  <collect_person_only>no</collect_person_only>
-  <ldaphost>localhost</ldaphost>
-  <ldapport>389</ldapport>
-  <ldapdn>DC=company,DC=com</ldapdn>
-  <ldaplogin>CN=ITOP-LDAP,DC=company,DC=com</ldaplogin>
-  <ldappassword>password</ldappassword>
-<!-- Parameters for Person synchronization -->
-  <ldappersonfilter>(objectClass=person)</ldappersonfilter>
-  <itop_group_pattern>/^CN=itop-(.*),OU=.*/</itop_group_pattern>
-  <person_id>samaccountname</person_id>
-  <person_name>sn</person_name>
-  <person_first_name>givenname</person_first_name>
-  <person_email>mail</person_email>
-  <person_phone>telephonenumber</person_phone>
-  <person_mobile_phone>mobile</person_mobile_phone>
-  <person_function>title</person_function>
-  <person_employee_number>employeenumber</person_employee_number>
-  <person_ou>ou</person_ou>
-  <synchronize_organization>no</synchronize_organization>
-  <person_default_organisation_id>Demo</person_default_organisation_id>
-  <person_default_status>active</person_default_status>
-<!-- Parameters for User synchronization -->
-  <ldapuserfilter>(&amp;(objectClass=person)(mail=*))</ldapuserfilter>
-  <user_id>samaccountname</user_id>
-  <user_contactid>mail</user_contactid>
-  <synchronize_profils>no</synchronize_profils>
-  <user_default_profile>Portal user</user_default_profile>
-  <user_default_language>FR FR</user_default_language>
+	<ldaphost>localhost</ldaphost>
+	<ldapport>389</ldapport>
+	<ldapdn>DC=company,DC=com</ldapdn>
+	<ldaplogin>CN=ITOP-LDAP,DC=company,DC=com</ldaplogin>
+	<ldappassword>password</ldappassword>
+	<!-- Parameters for Person synchronization -->
+	<ldappersonfilter>(objectClass=person)</ldappersonfilter>
+	<itop_group_pattern>/^CN=itop-(.*),OU=.*/</itop_group_pattern>
+	<person_fields>
+		<!--  Mapping between LDAP fields and iTop Person's object fields -->
+		<primary_key>samaccountname</primary_key>
+		<name>sn</name>
+		<first_name>givenname</first_name>
+		<email>mail</email>
+		<phone>telephonenumber</phone>
+		<mobile_phone>mobile</mobile_phone>
+		<function>title</function>
+		<employee_number>employeenumber</employee_number>
+	</person_fields>
+	<person_defaults>
+		<!--  Default values for iTop Person's object fields -->
+		<org_id>Demo</org_id>
+		<status>active</status>
+	</person_defaults>
+	<!-- Parameters for User synchronization -->
+	<collect_person_only>no</collect_person_only>
+	<ldapuserfilter>(&amp;(objectClass=person)(mail=*))</ldapuserfilter>
+	<user_id>samaccountname</user_id>
+	<user_contactid>mail</user_contactid>
+	<synchronize_profiles>no</synchronize_profiles>
+	<user_fields>
+		<!--  Mapping between LDAP fields and iTop UserLDAP's object fields -->
+		<primary_key>samaccountname</primary_key>
+		<login>samaccountname</login>
+		<contactid>mail</contactid>
+	</user_fields>
+	<user_defaults>
+		<!--  Default values for iTop UserLDAP's object fields -->
+		<profile>Portal user</profile>
+		<language>EN US</language>
+	</user_defaults>
+	<!--
+		Set a non empty (and unique) prefix if you run several instances of the collector against the same iTop Server
+		This is the recommended method to collect data from several LDAP servers. (assign a unique prefix to each "source" LDAP server)  
+		Note: prefix is defined here since json_placeholders (below) can only reference global parameters
+	-->
+	<prefix></prefix>
+	<json_placeholders>
+		<!-- For compatibility with the version 1.1.x of the collector, define the data table names as following:
+		<prefix></prefix>
+		<persons_data_table>synchro_data_PersonAD</persons_data_table>
+		<users_data_table></users_data_table>
+		 -->
+		<prefix>$prefix$</prefix>
+		<persons_data_table>synchro_data_$prefix$ldap_persons</persons_data_table>
+		<users_data_table>synchro_data_$prefix$ldap_users</users_data_table>
+	    <full_load_interval>604800</full_load_interval><!-- 7 days (in seconds): 7*24*60*60 -->
+	    <synchro_status>production</synchro_status>
+	</json_placeholders>
 </parameters>
 
