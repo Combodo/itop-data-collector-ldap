@@ -28,8 +28,6 @@
 	<!-- Parameters for User synchronization -->
 	<collect_person_only>no</collect_person_only>
 	<ldapuserfilter>(&amp;(objectClass=person)(mail=*))</ldapuserfilter>
-	<user_id>samaccountname</user_id>
-	<user_contactid>mail</user_contactid>
 	<synchronize_profiles>no</synchronize_profiles>
 	<user_fields>
 		<!--  Mapping between LDAP fields and iTop UserLDAP's object fields -->
@@ -59,6 +57,11 @@
 		<users_data_table>synchro_data_$prefix$ldap_users</users_data_table>
 	    <full_load_interval>604800</full_load_interval><!-- 7 days (in seconds): 7*24*60*60 -->
 	    <synchro_status>production</synchro_status>
+	    <!-- How to import the profiles in iTop. Possible values: write_if_empty | master_locked
+	    Use write_if_empty if you want the collector to initialize the profiles for each account but let you edit them in iTop after the initial creation of the user
+	    Use master_locked if you manage the profiles directly in LDAP and let the collector synchronize them in iTop
+	    -->
+	    <profile_list_update_policy>write_if_empty</profile_list_update_policy>
 	</json_placeholders>
 </parameters>
 

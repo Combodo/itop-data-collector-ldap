@@ -34,12 +34,7 @@ class iTopUserLDAPCollector extends Collector
         $this->sITopGroupPattern = Utils::GetConfigurationValue('itop_group_pattern', '/^CN=itop-(.*),OU=.*/');
         $this->aUserFields = Utils::GetConfigurationValue('user_fields', array('primary_key' => 'samaccountname'));
         $this->aUserDefaults = Utils::GetConfigurationValue('user_defaults', array());
-       
-        $this->sUserId = Utils::GetConfigurationValue('user_id', 'samaccountname');
-        $this->sUserContactId = Utils::GetConfigurationValue('user_contactid', 'email');
-        $this->sDefaultProfile = Utils::GetConfigurationValue('user_default_profile', 'Portal user');
-        $this->sDefaultLanguage = Utils::GetConfigurationValue('user_default_language', 'FR FR');
-        
+               
         $this->aLogins = array();
         $this->idx = 0;
         
@@ -91,6 +86,13 @@ class iTopUserLDAPCollector extends Collector
             $sMapping .= "   iTop 'profile_list' is filled with the constant value 'profileid->name:".$this->aUserDefaults['profile']."'\n";
         }
         Utils::Log(LOG_DEBUG, "LDAPUsers: Mapping of the fields:\n$sMapping");
+    }
+    
+    public function AttributeIsOptional($sAttCode)
+    {
+        if ($sAttCode == 'status') return true;
+        
+        return parent::AttributeIsOptional($sAttCode);
     }
 
     protected function GetData()

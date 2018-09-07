@@ -57,7 +57,7 @@
 			"attcode": "profile_list",
 			"update": "1",
 			"reconcile": "0",
-			"update_policy": "write_if_empty",
+			"update_policy": "$profile_list_update_policy$",
 			"row_separator": "|",
 			"attribute_separator": ";",
 			"value_separator": ":",

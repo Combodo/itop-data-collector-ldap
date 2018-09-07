@@ -65,9 +65,15 @@ class iTopPersonLDAPCollector extends Collector
             }
         }
         Utils::Log(LOG_DEBUG, "Persons: Mapping of the fields:\n$sMapping");
-        //TODO: check that the field mapping for primary_key exists
     }
-
+    
+    public function AttributeIsOptional($sAttCode)
+    {
+        if (in_array($sAttCode, array('anonymized', 'picture', 'status'))) return true;
+        
+        return parent::AttributeIsOptional($sAttCode);
+    }
+    
     protected function GetData()
     {
         $rLdapconn = ldap_connect($this->sLDAPHost, $this->sLDAPPort);
