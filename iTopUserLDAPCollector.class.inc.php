@@ -1,13 +1,9 @@
 <?php
 
-class iTopUserLDAPCollector extends Collector
+class iTopUserLDAPCollector extends LDAPCollector
 {
 
     protected $idx;
-    protected $sLDAPHost;
-    protected $sLDAPPort;
-    protected $sLDAPLogin;
-    protected $sLDAPPassword;
     protected $sLDAPDN;
     protected $sLDAPFilter;
     
@@ -24,12 +20,8 @@ class iTopUserLDAPCollector extends Collector
     public function __construct()
     {
         parent::__construct();
-        $this->sLDAPHost = Utils::GetConfigurationValue('ldaphost', 'localhost');
-        $this->sLDAPPort = Utils::GetConfigurationValue('ldapport', 389);
         $this->sLDAPDN = Utils::GetConfigurationValue('ldapdn', 'DC=company,DC=com');
         $this->sLDAPFilter = Utils::GetConfigurationValue('ldapuserfilter', '(&(objectClass=user)(objectCategory=person))');
-        $this->sLDAPLogin = Utils::GetConfigurationValue('ldaplogin', 'CN=ITOP-LDAP,DC=company,DC=com');
-        $this->sLDAPPassword = Utils::GetConfigurationValue('ldappassword', 'password');
         $this->sSynchronizeProfiles = Utils::GetConfigurationValue('synchronize_profiles', 'no');
         $this->sITopGroupPattern = Utils::GetConfigurationValue('itop_group_pattern', '/^CN=itop-(.*),OU=.*/');
         $this->aUserFields = Utils::GetConfigurationValue('user_fields', array('primary_key' => 'samaccountname'));
@@ -91,37 +83,28 @@ class iTopUserLDAPCollector extends Collector
     public function AttributeIsOptional($sAttCode)
     {
         if ($sAttCode == 'status') return true;
+        if ($sAttCode == 'reset_pwd_token') return true; // depends on the type of User (UserLDAP vs UserExternal)
         
         return parent::AttributeIsOptional($sAttCode);
     }
 
     protected function GetData()
     {
-        $rLdapconn = ldap_connect($this->sLDAPHost, $this->sLDAPPort);
+        $aList = $this->Search($this->sLDAPDN, $this->sLDAPFilter);
         
-        if (! $rLdapconn)
+        if ($aList !== false)
         {
-            return false;
+            $iNumberOfUsers = count($aList) - 1;
+            Utils::Log(LOG_INFO,"(Users) Number of entries found on LDAP: ".$iNumberOfUsers);
         }
-        
-        ldap_set_option($rLdapconn, LDAP_OPT_REFERRALS, 0);
-        ldap_set_option($rLdapconn, LDAP_OPT_PROTOCOL_VERSION, 3);
-        $rBind = ldap_bind($rLdapconn, $this->sLDAPLogin, $this->sLDAPPassword);
-        $rSearch = ldap_search($rLdapconn, $this->sLDAPDN, $this->sLDAPFilter);
-        $aAllData = ldap_get_entries($rLdapconn, $rSearch);
-        ldap_close($rLdapconn);
-        
-        $iNumberUser = count($aAllData) - 1;
-        Utils::Log(LOG_INFO, "(Users) Number of entries found in LDAP: ".$iNumberUser);
-        
-        return $aAllData;
+        return $aList;
     }
 
     public function Prepare()
     {
         if (! $aData = $this->GetData()) return false;
         
-        foreach ($aData as $aPerson)
+        foreach ($aData as $idx => $aPerson)
         {
             if (isset($aPerson[$this->aUserFields['primary_key']][0]) && $aPerson[$this->aUserFields['primary_key']][0] != "")
             {
@@ -182,6 +165,10 @@ class iTopUserLDAPCollector extends Collector
                 }
                 
                 $this->aLogins[] = $aValues;
+            }
+            else
+            {
+                Utils::Log(LOG_WARNING,"Skipping row #{$idx} because of lack of primary key. Is {$this->aUserFields['primary_key']} the right field to use as a primary key?");
             }
         }
         return true;

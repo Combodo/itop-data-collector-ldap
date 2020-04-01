@@ -7,34 +7,24 @@
 
 define('APPROOT', dirname(dirname(dirname(__FILE__))) . '/');
 
-require_once (APPROOT . 'core/parameters.class.inc.php');
-require_once (APPROOT . 'core/utils.class.inc.php');
+require_once (APPROOT.'core/parameters.class.inc.php');
+require_once (APPROOT.'core/utils.class.inc.php');
+require_once (APPROOT.'core/collector.class.inc.php');
+require_once (APPROOT.'collectors/LDAPCollector.class.inc.php');
 
-$sLdaphost = Utils::GetConfigurationValue('ldaphost', 'localhost');
-$sLdapport = Utils::GetConfigurationValue('ldapport', 389);
+Utils::$iConsoleLogLevel = LOG_DEBUG; // Force debug mode
+
 $sLdapdn = Utils::GetConfigurationValue('ldapdn', 'DC=company,DC=com');
 $sLdapfilter = Utils::GetConfigurationValue('ldappersonfilter', '(&(objectClass=user)(objectCategory=person))');
-$sLdaplogin = Utils::GetConfigurationValue('ldaplogin', 'CN=ITOP-LDAP,DC=company,DC=com');
-$sLdappassword = Utils::GetConfigurationValue('ldappassword', 'password');
 $aPersonFields = Utils::GetConfigurationValue('person_fields', array('primary_key' => 'samaccountname'));
 
-$rLdapconn = @ldap_connect($sLdaphost, $sLdapport);
-if ($rLdapconn === false)
-{
-    echo "ldap_connect failed check the syntax of your parameters !\n";
-    exit;
-}
-ldap_set_option($rLdapconn, LDAP_OPT_REFERRALS, 0);
-ldap_set_option($rLdapconn, LDAP_OPT_PROTOCOL_VERSION, 3);
-$rBind = @ldap_bind($rLdapconn, $sLdaplogin, $sLdappassword);
-if ($rBind === false)
-{
-    echo "ldap_bind failed: ".ldap_error($rLdapconn)." at $sLdaphost:$sLdapport as '$sLdaplogin' with password '$sLdappassword'\n";
-    exit;
-}
-$rSearch = ldap_search($rLdapconn, $sLdapdn, $sLdapfilter);
-$aList = ldap_get_entries($rLdapconn, $rSearch);
-ldap_close($rLdapconn);
+ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7);
+
+$oTestCollector = new LDAPCollector(); 
+$aList = $oTestCollector->Search($sLdapdn, $sLdapfilter);
+
+if ($aList === false) exit -1; // Something went wrong, exit with error !!
+
 $iNumberUser = count($aList) - 1;
 
 echo "The LDAP query '" . $sLdapfilter . "' returned " . $iNumberUser . " elements.\n";
@@ -87,5 +77,7 @@ foreach ($aList as $aLdapUser)
     }
 }
 echo "Found no record containing a non-empty value in {$aPersonFields['primary_key']}\nCheck the LDAP query and the primary_key mapping.\n";
+echo "The returned data is:\n";
+print_r($aList);
 
 

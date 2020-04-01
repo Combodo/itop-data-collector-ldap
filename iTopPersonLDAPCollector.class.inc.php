@@ -1,14 +1,10 @@
 <?php
 
-class iTopPersonLDAPCollector extends Collector
+class iTopPersonLDAPCollector extends LDAPCollector
 {
 
     protected $idx;
 
-    protected $sLDAPHost;
-    protected $sLDAPPort;
-    protected $sLDAPLogin;
-    protected $sLDAPPassword;
     protected $sLDAPDN;
     protected $sLDAPFilter;
     protected $sSynchronizeOrganizations;
@@ -21,12 +17,8 @@ class iTopPersonLDAPCollector extends Collector
     {
         parent::__construct();
         // let's read the configuration parameters
-        $this->sLDAPHost = Utils::GetConfigurationValue('ldaphost', 'localhost');
-        $this->sLDAPPort = Utils::GetConfigurationValue('ldapport', 389);
         $this->sLDAPDN = Utils::GetConfigurationValue('ldapdn', 'DC=company,DC=com');
         $this->sLDAPFilter = Utils::GetConfigurationValue('ldappersonfilter', '(&(objectClass=user)(objectCategory=person))');
-        $this->sLDAPLogin = Utils::GetConfigurationValue('ldaplogin', 'CN=ITOP-LDAP,DC=company,DC=com');
-        $this->sLDAPPassword = Utils::GetConfigurationValue('ldappassword', 'password');
         $this->sSynchronizeOrganizations = Utils::GetConfigurationValue('synchronize_organization', 'no');
         $this->aPersonDefaults = Utils::GetConfigurationValue('person_defaults', array());
         $this->aPersonFields = Utils::GetConfigurationValue('person_fields', array('primary_key' => 'samaccountname'));
@@ -76,21 +68,13 @@ class iTopPersonLDAPCollector extends Collector
     
     protected function GetData()
     {
-        $rLdapconn = ldap_connect($this->sLDAPHost, $this->sLDAPPort);
-        if (! $rLdapconn)
+        $aList = $this->Search($this->sLDAPDN, $this->sLDAPFilter);
+        
+        if ($aList !== false)
         {
-            return false;
+            $iNumberOfPersons = count($aList) - 1;
+            Utils::Log(LOG_INFO,"(Persons) Number of entries found on LDAP: ".$iNumberOfPersons);
         }
-        ldap_set_option($rLdapconn, LDAP_OPT_REFERRALS, 0);
-        ldap_set_option($rLdapconn, LDAP_OPT_PROTOCOL_VERSION, 3);
-        $rBind = ldap_bind($rLdapconn, $this->sLDAPLogin, $this->sLDAPPassword);
-        $rSearch = ldap_search($rLdapconn, $this->sLDAPDN, $this->sLDAPFilter);
-        $aList = ldap_get_entries($rLdapconn, $rSearch);
-        ldap_close($rLdapconn);
-        
-        $iNumberUser = count($aList) - 1;
-        Utils::Log(LOG_INFO,"(Persons) Number of entries found on LDAP: ".$iNumberUser);
-        
         return $aList;
     }
 

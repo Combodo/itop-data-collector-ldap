@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Default values for parameters. Do NOT alter this file, use params.local.xml instead -->
 <parameters>
-	<ldaphost>localhost</ldaphost>
-	<ldapport>389</ldapport>
+	<!--  NOTE: ldaphost and ldapport are deprecated in favor of ldapuri -->
+	<ldapuri></ldapuri>
 	<ldapdn>DC=company,DC=com</ldapdn>
 	<ldaplogin>CN=ITOP-LDAP,DC=company,DC=com</ldaplogin>
 	<ldappassword>password</ldappassword>
@@ -54,6 +54,7 @@
 		 -->
 		<prefix>$prefix$</prefix>
 		<persons_data_table>synchro_data_$prefix$ldap_persons</persons_data_table>
+	    <users_target_class>UserLDAP</users_target_class>
 		<users_data_table>synchro_data_$prefix$ldap_users</users_data_table>
 	    <full_load_interval>604800</full_load_interval><!-- 7 days (in seconds): 7*24*60*60 -->
 	    <synchro_status>production</synchro_status>
