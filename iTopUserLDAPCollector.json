@@ -1,10 +1,10 @@
 {
-	"name": "$prefix$Synchro User LDAP",
+	"name": "$prefix$Synchro Users from LDAP",
 	"description": "Synchronization of iTop user from LDAP Directory",
 	"status": "$synchro_status$",
 	"user_id": "$synchro_user$",
 	"notify_contact_id": "$contact_to_notify$",
-	"scope_class": "UserLDAP",
+	"scope_class": "$users_target_class$",
 	"database_table_name": "$users_data_table$",
 	"scope_restriction": "",
 	"full_load_periodicity": "$full_load_interval$",
