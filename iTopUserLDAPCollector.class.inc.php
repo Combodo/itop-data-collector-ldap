@@ -90,7 +90,12 @@ class iTopUserLDAPCollector extends LDAPCollector
 
     protected function GetData()
     {
-        $aList = $this->Search($this->sLDAPDN, $this->sLDAPFilter);
+        $aAttributes = array_values($this->aUserFields);
+        if ($this->sSynchronizeProfiles !== 'no')
+        {
+            $aAttributes[] = 'memberof';
+        }
+        $aList = $this->Search($this->sLDAPDN, $this->sLDAPFilter, $aAttributes);
         
         if ($aList !== false)
         {
@@ -168,7 +173,11 @@ class iTopUserLDAPCollector extends LDAPCollector
             }
             else
             {
-                Utils::Log(LOG_WARNING,"Skipping row #{$idx} because of lack of primary key. Is {$this->aUserFields['primary_key']} the right field to use as a primary key?");
+                // the first row of the results contains the 'count', it's Ok to ignore it, but for others rows, let's report it
+                if ($idx !== 'count')
+                {
+                    Utils::Log(LOG_WARNING,"Skipping row #{$idx} because of lack of primary key. Is {$this->aUserFields['primary_key']} the right field to use as a primary key?");
+                }
             }
         }
         return true;

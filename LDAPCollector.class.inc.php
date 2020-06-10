@@ -146,14 +146,15 @@ TXT
      * Perform a search with the given parameters, also manages the connexion to the server
      * @param string $sDN The DN of the base object to search under
      * @param string $sFilter The filter criteria
+     * @param string[] $aAttributes The attributes to retrieve '*' means all attributes... BEWARE: sometimes memberof must be explicitely requested
      * @return false|string[]
      */
-    public function Search($sDN, $sFilter)
+    public function Search($sDN, $sFilter, $aAttributes = array('*'))
     {
         if ($this->Connect())
         {
-            Utils::Log(LOG_DEBUG, "ldap_search('$sDN', '$sFilter')...");
-            $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter);
+            Utils::Log(LOG_DEBUG, "ldap_search('$sDN', '$sFilter', ['".implode("', '", $aAttributes)."'])...");
+            $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes);
             if ($rSearch === false)
             {
                 Utils::Log(LOG_ERR, "ldap_search('$sDN', '$sFilter') FAILED (".ldap_error($this->rConnection).").");

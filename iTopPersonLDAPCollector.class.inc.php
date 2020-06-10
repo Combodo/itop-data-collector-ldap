@@ -68,7 +68,8 @@ class iTopPersonLDAPCollector extends LDAPCollector
     
     protected function GetData()
     {
-        $aList = $this->Search($this->sLDAPDN, $this->sLDAPFilter);
+        $aAttributes = array_values($this->aPersonFields);
+        $aList = $this->Search($this->sLDAPDN, $this->sLDAPFilter, $aAttributes);
         
         if ($aList !== false)
         {
