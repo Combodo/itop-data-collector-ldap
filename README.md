@@ -5,12 +5,12 @@
 iTop data collectors are simple PHP command line applications to collect data from an external application and load/synchronize the
  information into iTop using the data synchronization mechanism built into iTop.
 
-This module is the extra part to collect data from LDAP directories. It needs [the collector base module](https://github.com/Combodo/itop
--data
--collector-base) to work.
+This module is the extra part to collect data from LDAP directories. It needs 
+[the collector base module](https://github.com/Combodo/itop-data-collector-base) 
+to work.
 
-For more information about this module have a look at the corresponding [extension documentation](https://www.itophub.io/wiki/page?id
-=extensions%3Aldap-data-collector).
+For more information about this module have a look at the corresponding 
+[extension documentation](https://www.itophub.io/wiki/page?id=extensions%3Aldap-data-collector).
 
 
 ## Download
