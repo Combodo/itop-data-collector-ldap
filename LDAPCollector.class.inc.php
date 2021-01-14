@@ -154,6 +154,13 @@ TXT
         if ($this->Connect())
         {
             Utils::Log(LOG_DEBUG, "ldap_search('$sDN', '$sFilter', ['".implode("', '", $aAttributes)."'])...");
+
+	$cookie = '';
+	$pageSize = 500;
+	$firstPass = true;
+	do {
+	    ldap_control_paged_result($this->rConnection, $pageSize, true, $cookie);
+
             $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes);
             if ($rSearch === false)
             {
@@ -161,8 +168,26 @@ TXT
                 return false;
             }
             Utils::Log(LOG_DEBUG, "ldap_search() Ok.");
+
+	    $bList = ldap_get_entries($this->rConnection, $rSearch);
+	    if($firstPass)
+	    {
+		$aList = $bList;
+	    }
+	    else
+	    {
+		$aList = array_merge($aList, $bList);
+	    }
+
+	    ldap_control_paged_result_response($this->rConnection, $rSearch, $cookie);
+	    $iNumberUser = count($aList) - 1;
+	    Utils::Log(LOG_INFO,"(Persons) Number of entries found on LDAP so far: ".$iNumberUser);
+	    $firstPass = false;
+	} while($cookie !== null && $cookie != ''); 		
+
+
             
-            $aList = ldap_get_entries($this->rConnection, $rSearch);
+	    //$aList = ldap_get_entries($this->rConnection, $rSearch);
             $this->Disconnect();
             return $aList;
         }
