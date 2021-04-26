@@ -12,6 +12,8 @@ class LDAPCollector extends Collector
     protected $sPassword;
     protected $rConnection = null;
     protected $bBindSuccess = false;
+    protected $bPaginationIsSupported = null;
+    protected $iPageSize;
     
     public function __construct()
     {
@@ -25,6 +27,8 @@ class LDAPCollector extends Collector
         // Bind parameters
         $this->sLogin = Utils::GetConfigurationValue('ldaplogin', 'CN=ITOP-LDAP,DC=company,DC=com');
         $this->sPassword = Utils::GetConfigurationValue('ldappassword', 'password');
+        // Pagination
+        $this->iPageSize = Utils::GetConfigurationValue('page_size', 0);
     }
     
     /**
@@ -102,6 +106,25 @@ TXT
                 return false;
             }
         }
+        if ($this->PaginationIsSupported())
+        {
+            Utils::Log(LOG_INFO, "Pagination of results is supported by the LDAP server.");
+            if ($this->iPageSize > 0)
+            {
+                Utils::Log(LOG_INFO, "Results will be retrieved by pages of {$this->iPageSize} elements.");
+            }
+            else
+            {
+                Utils::Log(LOG_INFO, "Consider setting the parameter <page_size> to a value greater than zero in the configuration file in order to use pagination.");
+            }
+        }
+        else 
+        {
+            if ($this->iPageSize > 0)
+            {
+                Utils::Log(LOG_WARNING, "Pagination is NOT supported by the LDAP server. The parameter <page_size> will be ignored.");
+            }
+        }
         return true;
     }
     
@@ -141,6 +164,70 @@ TXT
         $this->rConnection = null;
         $this->bBindSuccess = false;
     }
+
+    private function PaginationIsSupported()
+    {
+        if ($this->bPaginationIsSupported === null)
+        {
+            $result = ldap_read($this->rConnection, '', '(objectClass=*)', ['supportedControl']);
+            $aData = ldap_get_entries($this->rConnection, $result);
+            $aControls = $this->LdapControlsToLabels($aData[0]['supportedcontrol']);
+
+            Utils::Log(LOG_DEBUG, "Supported controls: ".implode(', ', $aControls).".");
+
+            $this->bPaginationIsSupported = in_array(LDAP_CONTROL_PAGEDRESULTS, $aData[0]['supportedcontrol']);
+        }
+        return $this->bPaginationIsSupported;
+    }
+
+    /**
+     * Replace the well-known OIDs with human readable labels
+     * @param string[] $aControls
+     * @return string[]
+     */
+    private function LdapControlsToLabels($aControls)
+    {
+        $aHumanReadableControls = array();
+        $aWellKnownControls = array(
+            LDAP_CONTROL_MANAGEDSAIT => 'LDAP_CONTROL_MANAGEDSAIT',
+            LDAP_CONTROL_PROXY_AUTHZ => 'LDAP_CONTROL_PROXY_AUTHZ',
+            LDAP_CONTROL_SUBENTRIES => 'LDAP_CONTROL_SUBENTRIES',
+            LDAP_CONTROL_VALUESRETURNFILTER => 'LDAP_CONTROL_VALUESRETURNFILTER',
+            LDAP_CONTROL_ASSERT => 'LDAP_CONTROL_ASSERT',
+            LDAP_CONTROL_PRE_READ => 'LDAP_CONTROL_PRE_READ',
+            LDAP_CONTROL_POST_READ => 'LDAP_CONTROL_POST_READ',
+            LDAP_CONTROL_SORTREQUEST => 'LDAP_CONTROL_SORTREQUEST',
+            LDAP_CONTROL_SORTRESPONSE => 'LDAP_CONTROL_SORTRESPONSE',
+            LDAP_CONTROL_PAGEDRESULTS => 'LDAP_CONTROL_PAGEDRESULTS',
+            LDAP_CONTROL_SYNC => 'LDAP_CONTROL_SYNC',
+            LDAP_CONTROL_SYNC_STATE => 'LDAP_CONTROL_SYNC_STATE',
+            LDAP_CONTROL_SYNC_DONE => 'LDAP_CONTROL_SYNC_DONE',
+            LDAP_CONTROL_DONTUSECOPY => 'LDAP_CONTROL_DONTUSECOPY',
+            LDAP_CONTROL_PASSWORDPOLICYREQUEST => 'LDAP_CONTROL_PASSWORDPOLICYREQUEST',
+            LDAP_CONTROL_PASSWORDPOLICYRESPONSE => 'LDAP_CONTROL_PASSWORDPOLICYRESPONSE',
+            LDAP_CONTROL_X_INCREMENTAL_VALUES => 'LDAP_CONTROL_X_INCREMENTAL_VALUES',
+            LDAP_CONTROL_X_DOMAIN_SCOPE => 'LDAP_CONTROL_X_DOMAIN_SCOPE',
+            LDAP_CONTROL_X_PERMISSIVE_MODIFY => 'LDAP_CONTROL_X_PERMISSIVE_MODIFY',
+            LDAP_CONTROL_X_SEARCH_OPTIONS => 'LDAP_CONTROL_X_SEARCH_OPTIONS',
+            LDAP_CONTROL_X_TREE_DELETE => 'LDAP_CONTROL_X_TREE_DELETE',
+            LDAP_CONTROL_X_EXTENDED_DN => 'LDAP_CONTROL_X_EXTENDED_DN',
+            LDAP_CONTROL_VLVREQUEST => 'LDAP_CONTROL_VLVREQUEST',
+            LDAP_CONTROL_VLVRESPONSE => 'LDAP_CONTROL_VLVRESPONSE',
+        );
+        foreach($aControls as $key => $sControl)
+        {
+            if ($key == 'count') continue;
+            if (array_key_exists($sControl, $aWellKnownControls))
+            {
+                $aHumanReadableControls[] = $aWellKnownControls[$sControl];
+            }
+            else 
+            {
+                $aHumanReadableControls[] = $sControl;
+            }
+        }
+        return $aHumanReadableControls;
+    }
    
     /**
      * Perform a search with the given parameters, also manages the connexion to the server
@@ -153,19 +240,71 @@ TXT
     {
         if ($this->Connect())
         {
+            if ($this->PaginationIsSupported() && ($this->iPageSize > 0))
+            {
+                return $this->PaginatedSearch($sDN, $sFilter, $aAttributes);
+            }
+            else
+            {
+                Utils::Log(LOG_DEBUG, "ldap_search('$sDN', '$sFilter', ['".implode("', '", $aAttributes)."'])...");
+                $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes);
+                if ($rSearch === false)
+                {
+                    Utils::Log(LOG_ERR, "ldap_search('$sDN', '$sFilter') FAILED (".ldap_error($this->rConnection).").");
+                    return false;
+                }
+                Utils::Log(LOG_DEBUG, "ldap_search() Ok.");
+                
+                $aList = ldap_get_entries($this->rConnection, $rSearch);
+                $this->Disconnect();
+                return $aList;
+            }
+        }
+        return false;
+    }
+    
+    private function PaginatedSearch($sDN, $sFilter, $aAttributes = array('*'))
+    {
+        $cookie = '';
+        $aData = array('count' => 0);
+
+        do
+        {
             Utils::Log(LOG_DEBUG, "ldap_search('$sDN', '$sFilter', ['".implode("', '", $aAttributes)."'])...");
-            $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes);
-            if ($rSearch === false)
+            $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes, 0, 0, 0, LDAP_DEREF_NEVER, [['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => $this->iPageSize, 'cookie' => $cookie]]]);
+            
+            $errcode = $matcheddn = $sErrmsg = $referrals = $aControls = null;
+            @ldap_parse_result($this->rConnection, $rSearch, $errcode , $matcheddn , $sErrmsg , $referrals, $aControls);
+            
+            if ($errcode !== 0)
             {
                 Utils::Log(LOG_ERR, "ldap_search('$sDN', '$sFilter') FAILED (".ldap_error($this->rConnection).").");
                 return false;
             }
-            Utils::Log(LOG_DEBUG, "ldap_search() Ok.");
-            
+
             $aList = ldap_get_entries($this->rConnection, $rSearch);
-            $this->Disconnect();
-            return $aList;
+            foreach($aList as $values)
+            {
+                if (is_array($values)) // ignore the first element of the results: 'count' => <number>
+                {
+                    $aData[] = $values;
+                    $aData['count']++;
+                }
+            }
+
+            if (isset($aControls[LDAP_CONTROL_PAGEDRESULTS]['value']['cookie']))
+            {
+                // You need to pass the cookie from the last call to the next one
+                $cookie = $aControls[LDAP_CONTROL_PAGEDRESULTS]['value']['cookie'];
+            }
+            else
+            {
+                $cookie = '';
+            }
+            // Empty cookie means last page
         }
-        return false;
+        while (!empty($cookie));
+
+        return $aData;
     }
 }
