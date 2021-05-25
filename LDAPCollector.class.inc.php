@@ -1,13 +1,41 @@
 <?php
+
+if (!defined("LDAP_CONTROL_PAGEDRESULTS")) {
+	define("LDAP_CONTROL_MANAGEDSAIT", "2.16.840.1.113730.3.4.2");
+	define("LDAP_CONTROL_PROXY_AUTHZ", "2.16.840.1.113730.3.4.18");
+	define("LDAP_CONTROL_SUBENTRIES", "1.3.6.1.4.1.4203.1.10.1");
+	define("LDAP_CONTROL_VALUESRETURNFILTER", "1.2.826.0.1.3344810.2.3");
+	define("LDAP_CONTROL_ASSERT", "1.3.6.1.1.12");
+	define("LDAP_CONTROL_PRE_READ", "1.3.6.1.1.13.1");
+	define("LDAP_CONTROL_POST_READ", "1.3.6.1.1.13.2");
+	define("LDAP_CONTROL_SORTREQUEST", "1.2.840.113556.1.4.473");
+	define("LDAP_CONTROL_SORTRESPONSE", "1.2.840.113556.1.4.474");
+	define("LDAP_CONTROL_PAGEDRESULTS", "1.2.840.113556.1.4.319");
+	define("LDAP_CONTROL_SYNC", "1.3.6.1.4.1.4203.1.9.1.1");
+	define("LDAP_CONTROL_SYNC_STATE", "1.3.6.1.4.1.4203.1.9.1.2");
+	define("LDAP_CONTROL_SYNC_DONE", "1.3.6.1.4.1.4203.1.9.1.3");
+	define("LDAP_CONTROL_DONTUSECOPY", "1.3.6.1.1.22");
+	define("LDAP_CONTROL_PASSWORDPOLICYREQUEST", "1.3.6.1.4.1.42.2.27.8.5.1");
+	define("LDAP_CONTROL_PASSWORDPOLICYRESPONSE", "1.3.6.1.4.1.42.2.27.8.5.1");
+	define("LDAP_CONTROL_X_INCREMENTAL_VALUES", "1.2.840.113556.1.4.802");
+	define("LDAP_CONTROL_X_DOMAIN_SCOPE", "1.2.840.113556.1.4.1339");
+	define("LDAP_CONTROL_X_PERMISSIVE_MODIFY", "1.2.840.113556.1.4.1413");
+	define("LDAP_CONTROL_X_SEARCH_OPTIONS", "1.2.840.113556.1.4.1340");
+	define("LDAP_CONTROL_X_TREE_DELETE", "1.2.840.113556.1.4.805");
+	define("LDAP_CONTROL_X_EXTENDED_DN", "1.2.840.113556.1.4.529");
+	define("LDAP_CONTROL_VLVREQUEST", "2.16.840.1.113730.3.4.9");
+	define("LDAP_CONTROL_VLVRESPONSE", "2.16.840.1.113730.3.4.10");
+}
+
 /**
  * Base class for LDAP collectors, handles the connexion to LDAP (connect & bind)
  * as well as basic searches
  */
 class LDAPCollector extends Collector
 {
-    protected $sHost;
-    protected $sPort;
-    protected $sURI;
+	protected $sHost;
+	protected $sPort;
+	protected $sURI;
     protected $sLogin;
     protected $sPassword;
     protected $rConnection = null;
@@ -169,13 +197,17 @@ TXT
     {
         if ($this->bPaginationIsSupported === null)
         {
-            $result = ldap_read($this->rConnection, '', '(objectClass=*)', ['supportedControl']);
-            $aData = ldap_get_entries($this->rConnection, $result);
-            $aControls = $this->LdapControlsToLabels($aData[0]['supportedcontrol']);
+	        if (version_compare(PHP_VERSION, '7.3.0') < 0) {
+		        $this->bPaginationIsSupported = false;
+	        } else {
+		        $result = ldap_read($this->rConnection, '', '(objectClass=*)', ['supportedControl']);
+		        $aData = ldap_get_entries($this->rConnection, $result);
+		        $aControls = $this->LdapControlsToLabels($aData[0]['supportedcontrol']);
 
-            Utils::Log(LOG_DEBUG, "Supported controls: ".implode(', ', $aControls).".");
+		        Utils::Log(LOG_DEBUG, "Supported controls: ".implode(', ', $aControls).".");
 
-            $this->bPaginationIsSupported = in_array(LDAP_CONTROL_PAGEDRESULTS, $aData[0]['supportedcontrol']);
+		        $this->bPaginationIsSupported = in_array(LDAP_CONTROL_PAGEDRESULTS, $aData[0]['supportedcontrol']);
+	        }
         }
         return $this->bPaginationIsSupported;
     }
@@ -189,30 +221,30 @@ TXT
     {
         $aHumanReadableControls = array();
         $aWellKnownControls = array(
-            LDAP_CONTROL_MANAGEDSAIT => 'LDAP_CONTROL_MANAGEDSAIT',
-            LDAP_CONTROL_PROXY_AUTHZ => 'LDAP_CONTROL_PROXY_AUTHZ',
-            LDAP_CONTROL_SUBENTRIES => 'LDAP_CONTROL_SUBENTRIES',
-            LDAP_CONTROL_VALUESRETURNFILTER => 'LDAP_CONTROL_VALUESRETURNFILTER',
-            LDAP_CONTROL_ASSERT => 'LDAP_CONTROL_ASSERT',
-            LDAP_CONTROL_PRE_READ => 'LDAP_CONTROL_PRE_READ',
-            LDAP_CONTROL_POST_READ => 'LDAP_CONTROL_POST_READ',
-            LDAP_CONTROL_SORTREQUEST => 'LDAP_CONTROL_SORTREQUEST',
-            LDAP_CONTROL_SORTRESPONSE => 'LDAP_CONTROL_SORTRESPONSE',
-            LDAP_CONTROL_PAGEDRESULTS => 'LDAP_CONTROL_PAGEDRESULTS',
-            LDAP_CONTROL_SYNC => 'LDAP_CONTROL_SYNC',
-            LDAP_CONTROL_SYNC_STATE => 'LDAP_CONTROL_SYNC_STATE',
-            LDAP_CONTROL_SYNC_DONE => 'LDAP_CONTROL_SYNC_DONE',
-            LDAP_CONTROL_DONTUSECOPY => 'LDAP_CONTROL_DONTUSECOPY',
-            LDAP_CONTROL_PASSWORDPOLICYREQUEST => 'LDAP_CONTROL_PASSWORDPOLICYREQUEST',
-            LDAP_CONTROL_PASSWORDPOLICYRESPONSE => 'LDAP_CONTROL_PASSWORDPOLICYRESPONSE',
-            LDAP_CONTROL_X_INCREMENTAL_VALUES => 'LDAP_CONTROL_X_INCREMENTAL_VALUES',
-            LDAP_CONTROL_X_DOMAIN_SCOPE => 'LDAP_CONTROL_X_DOMAIN_SCOPE',
-            LDAP_CONTROL_X_PERMISSIVE_MODIFY => 'LDAP_CONTROL_X_PERMISSIVE_MODIFY',
-            LDAP_CONTROL_X_SEARCH_OPTIONS => 'LDAP_CONTROL_X_SEARCH_OPTIONS',
-            LDAP_CONTROL_X_TREE_DELETE => 'LDAP_CONTROL_X_TREE_DELETE',
-            LDAP_CONTROL_X_EXTENDED_DN => 'LDAP_CONTROL_X_EXTENDED_DN',
-            LDAP_CONTROL_VLVREQUEST => 'LDAP_CONTROL_VLVREQUEST',
-            LDAP_CONTROL_VLVRESPONSE => 'LDAP_CONTROL_VLVRESPONSE',
+	        LDAP_CONTROL_MANAGEDSAIT => 'LDAP_CONTROL_MANAGEDSAIT',
+	        LDAP_CONTROL_PROXY_AUTHZ => 'LDAP_CONTROL_PROXY_AUTHZ',
+	        LDAP_CONTROL_SUBENTRIES => 'LDAP_CONTROL_SUBENTRIES',
+	        LDAP_CONTROL_VALUESRETURNFILTER => 'LDAP_CONTROL_VALUESRETURNFILTER',
+	        LDAP_CONTROL_ASSERT => 'LDAP_CONTROL_ASSERT',
+	        LDAP_CONTROL_PRE_READ => 'LDAP_CONTROL_PRE_READ',
+	        LDAP_CONTROL_POST_READ => 'LDAP_CONTROL_POST_READ',
+	        LDAP_CONTROL_SORTREQUEST => 'LDAP_CONTROL_SORTREQUEST',
+	        LDAP_CONTROL_SORTRESPONSE => 'LDAP_CONTROL_SORTRESPONSE',
+	        LDAP_CONTROL_PAGEDRESULTS => 'LDAP_CONTROL_PAGEDRESULTS',
+	        LDAP_CONTROL_SYNC => 'LDAP_CONTROL_SYNC',
+	        LDAP_CONTROL_SYNC_STATE => 'LDAP_CONTROL_SYNC_STATE',
+	        LDAP_CONTROL_SYNC_DONE => 'LDAP_CONTROL_SYNC_DONE',
+	        LDAP_CONTROL_DONTUSECOPY => 'LDAP_CONTROL_DONTUSECOPY',
+	        //LDAP_CONTROL_PASSWORDPOLICYREQUEST => 'LDAP_CONTROL_PASSWORDPOLICYREQUEST',
+	        LDAP_CONTROL_PASSWORDPOLICYRESPONSE => 'LDAP_CONTROL_PASSWORDPOLICYRESPONSE',
+	        LDAP_CONTROL_X_INCREMENTAL_VALUES => 'LDAP_CONTROL_X_INCREMENTAL_VALUES',
+	        LDAP_CONTROL_X_DOMAIN_SCOPE => 'LDAP_CONTROL_X_DOMAIN_SCOPE',
+	        LDAP_CONTROL_X_PERMISSIVE_MODIFY => 'LDAP_CONTROL_X_PERMISSIVE_MODIFY',
+	        LDAP_CONTROL_X_SEARCH_OPTIONS => 'LDAP_CONTROL_X_SEARCH_OPTIONS',
+	        LDAP_CONTROL_X_TREE_DELETE => 'LDAP_CONTROL_X_TREE_DELETE',
+	        LDAP_CONTROL_X_EXTENDED_DN => 'LDAP_CONTROL_X_EXTENDED_DN',
+	        LDAP_CONTROL_VLVREQUEST => 'LDAP_CONTROL_VLVREQUEST',
+	        LDAP_CONTROL_VLVRESPONSE => 'LDAP_CONTROL_VLVRESPONSE',
         );
         foreach($aControls as $key => $sControl)
         {
