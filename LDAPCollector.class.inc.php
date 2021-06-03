@@ -134,7 +134,7 @@ TXT
                 return false;
             }
         }
-        if ($this->PaginationIsSupported())
+        if ($this->PaginationIsSupported(true))
         {
             Utils::Log(LOG_INFO, "Pagination of results is supported by the LDAP server.");
             if ($this->iPageSize > 0)
@@ -150,7 +150,7 @@ TXT
         {
             if ($this->iPageSize > 0)
             {
-                Utils::Log(LOG_WARNING, "Pagination is NOT supported by the LDAP server. The parameter <page_size> will be ignored.");
+                Utils::Log(LOG_WARNING, "The parameter <page_size> will be ignored.");
             }
         }
         return true;
@@ -193,12 +193,15 @@ TXT
         $this->bBindSuccess = false;
     }
 
-    private function PaginationIsSupported()
+    private function PaginationIsSupported($bLogStatus = false)
     {
         if ($this->bPaginationIsSupported === null)
         {
 	        if (version_compare(PHP_VERSION, '7.3.0') < 0) {
 		        $this->bPaginationIsSupported = false;
+		        if ($bLogStatus && ($this->iPageSize > 0)) {
+			        Utils::Log(LOG_WARNING, "PHP 7.3.0 or above is needed to support pagination");
+		        }
 	        } else {
 		        $result = ldap_read($this->rConnection, '', '(objectClass=*)', ['supportedControl']);
 		        $aData = ldap_get_entries($this->rConnection, $result);
@@ -207,6 +210,9 @@ TXT
 		        Utils::Log(LOG_DEBUG, "Supported controls: ".implode(', ', $aControls).".");
 
 		        $this->bPaginationIsSupported = in_array(LDAP_CONTROL_PAGEDRESULTS, $aData[0]['supportedcontrol']);
+		        if ($bLogStatus && !$this->bPaginationIsSupported && ($this->iPageSize > 0)) {
+			        Utils::Log(LOG_WARNING, "Pagination is NOT supported by the server");
+		        }
 	        }
         }
         return $this->bPaginationIsSupported;
