@@ -43,18 +43,18 @@ class LDAPCollector extends Collector
     protected $bPaginationIsSupported = null;
     protected $iPageSize;
     
-    public function __construct()
+    public function __construct(string $sHost = null, string $sURI = null, string $sPort = null, string $sLogin = null, string $sPassword = null)
     {
         parent::__construct();
         // let's read the configuration parameters
         // No connection method an URI like ldap://<server>:<port> or ldaps://<server>:<port>
-        $this->sURI = Utils::GetConfigurationValue('ldapuri', '');
+        $this->sURI = $sURI;// ?? Utils::GetConfigurationValue('ldapuri', '');
         // Old connection method
-        $this->sHost = Utils::GetConfigurationValue('ldaphost', 'localhost');
-        $this->sPort = Utils::GetConfigurationValue('ldapport', 389);
+        $this->sHost = $sHost;// ??  Utils::GetConfigurationValue('ldaphost', 'localhost');
+        $this->sPort = $sPort;// ?? Utils::GetConfigurationValue('ldapport', 389);
         // Bind parameters
-        $this->sLogin = Utils::GetConfigurationValue('ldaplogin', 'CN=ITOP-LDAP,DC=company,DC=com');
-        $this->sPassword = Utils::GetConfigurationValue('ldappassword', 'password');
+        $this->sLogin = $sLogin;// ?? Utils::GetConfigurationValue('ldaplogin', 'CN=ITOP-LDAP,DC=company,DC=com');
+        $this->sPassword = $sPassword;// ?? Utils::GetConfigurationValue('ldappassword', 'password');
         // Pagination
         $this->iPageSize = Utils::GetConfigurationValue('page_size', 0);
     }
