@@ -1,0 +1,5 @@
+<parameters>
+    <itop-auth-infos-path>/bien/cache</itop-auth-infos-path>
+    <ldap-saved-infos-path>./dans/extension/?</ldap-saved-infos-path>
+    <ldap-temp-infos-path>./pareil</ldap-temp-infos-path>
+</parameters>

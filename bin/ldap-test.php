@@ -5,7 +5,8 @@
  * of the mapping.
  */
 
-define('APPROOT', dirname(dirname(dirname(__FILE__))) . '/');
+ define('APPROOT', dirname(__FILE__, 3) . '/'); // correct way
+const APPROOT = '/var/www/html/itop-community/data/production-modules/ldap-data-collector/'; // for developping with symlinks
 
 require_once (APPROOT.'core/parameters.class.inc.php');
 require_once (APPROOT.'core/utils.class.inc.php');
@@ -86,7 +87,7 @@ foreach ($aList as $aLdapUser)
                 $iKeyLen = strlen($sKey);
                 $sFirstField = $sKey . ': ';
                 $sPlaceHolder = str_repeat(' ', $iKeyLen + 2);
-                
+
                 $iCount = $data['count'];
                 $aValues = array();
                 for ($i = 0; $i < $iCount; $i ++)
