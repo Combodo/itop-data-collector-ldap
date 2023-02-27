@@ -12,6 +12,8 @@ class iTopUserLDAPCollector extends LDAPCollector
     protected $sDefaultLanguage;
     protected $sSynchronizeProfiles;
     protected $sITopGroupPattern;
+	protected $aUserFields;
+	protected $aUserDefaults;
     protected $sUserId;
     protected $sUserContactId;
 
