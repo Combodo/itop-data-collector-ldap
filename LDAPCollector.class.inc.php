@@ -76,7 +76,7 @@ class LDAPCollector extends Collector
     {
         if ($this->IsConnected()) return true;
         
-        if ($this->Init())
+        if ($this->InitLDAP())
         {
             ldap_set_option($this->rConnection, LDAP_OPT_REFERRALS, 0);
             ldap_set_option($this->rConnection, LDAP_OPT_PROTOCOL_VERSION, 3);
@@ -97,7 +97,7 @@ class LDAPCollector extends Collector
      * Perform just the initialization of the connection parameters (no connection to the LDAP server)
      * @return boolean
      */
-    private function Init()
+    private function InitLDAP()
     {
         if ($this->rConnection !== null) return true;
         
