@@ -135,13 +135,12 @@ $responseArray['code'] = 200;
 $responseArray['message'] = 'Connexion effectuée avec succès; vous pouvez désormais synchroniser vos données dans les onglets ci-dessus.';
 
 // save temp test LDAP credentials
-$xml = new SimpleXMLElement('<xml/>');
-$parameters = $xml->addChild('parameters');
+$parameters = new SimpleXMLElement('<parameters/>');
 $parameters->addChild('ldapuri', $sURI);
 $parameters->addChild('ldapdn', $sLdapdn);
 $parameters->addChild('ldappassword', $sPassword);
 $parameters->addChild('ldaplogin', $sLogin);
-$dom = dom_import_simplexml($xml)->ownerDocument;
+$dom = dom_import_simplexml($parameters)->ownerDocument;
 $dom->formatOutput = true;
 $prettyXML = $dom->saveXML();
 $file = fopen(__DIR__.'/../../conf/params.temp.xml', 'w');
