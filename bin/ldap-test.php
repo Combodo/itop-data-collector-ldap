@@ -5,8 +5,7 @@
  * of the mapping.
  */
 
- define('APPROOT', dirname(__FILE__, 3) . '/'); // correct way
-const APPROOT = '/var/www/html/itop-community/data/production-modules/ldap-data-collector/'; // for developping with symlinks
+define('APPROOT', dirname(__FILE__, 3) . '/'); // correct way
 
 require_once (APPROOT.'core/parameters.class.inc.php');
 require_once (APPROOT.'core/utils.class.inc.php');
@@ -135,4 +134,24 @@ $responseArray["persons"] = $ldapPersons;
 $responseArray['code'] = 200;
 $responseArray['message'] = 'Connexion effectuée avec succès; vous pouvez désormais synchroniser vos données dans les onglets ci-dessus.';
 
-echo json_encode($responseArray);
+// save temp test LDAP credentials
+$xml = new SimpleXMLElement('<xml/>');
+$parameters = $xml->addChild('parameters');
+$parameters->addChild('ldapuri', $sURI);
+$parameters->addChild('ldapdn', $sLdapdn);
+$parameters->addChild('ldappassword', $sPassword);
+$parameters->addChild('ldaplogin', $sLogin);
+$dom = dom_import_simplexml($xml)->ownerDocument;
+$dom->formatOutput = true;
+$prettyXML = $dom->saveXML();
+$file = fopen(__DIR__.'/../../conf/params.temp.xml', 'w');
+fwrite($file, $prettyXML);
+fclose($file);
+
+// save JSON LDAP data
+$responseArray = json_encode($responseArray, JSON_PRETTY_PRINT);
+$file = fopen(__DIR__.'/../../temp/data.json', 'w');
+fwrite($file, $responseArray);
+fclose($file);
+
+echo $responseArray;
