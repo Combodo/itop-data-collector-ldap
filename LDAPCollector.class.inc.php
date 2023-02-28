@@ -78,19 +78,9 @@ class LDAPCollector extends Collector
         
         if ($this->InitLDAP())
         {
-            ldap_set_option($this->rConnection, LDAP_OPT_REFERRALS, 0);
-            ldap_set_option($this->rConnection, LDAP_OPT_PROTOCOL_VERSION, 3);
-            
-            Utils::Log(LOG_DEBUG, "ldap_bind('{$this->sLogin}', '{$this->sPassword}')...");
-            $this->bBindSuccess = @ldap_bind($this->rConnection, $this->sLogin, $this->sPassword);
-            if ($this->bBindSuccess === false)
-            {
-                Utils::Log(LOG_ERR, "ldap_bind('{$this->sLogin}', '{$this->sPassword}') FAILED (".ldap_error($this->rConnection).").");
-                return false;
-            }
-            Utils::Log(LOG_DEBUG, "ldap_bind() Ok.");
+			return true;
         }
-        return true;
+        return false;
     }
     
     /**
@@ -103,16 +93,12 @@ class LDAPCollector extends Collector
         
         $this->bBindSuccess = false;
         
+		// Prepare the connection regarding the parameters
         if ($this->sURI !== '')
         {
             // New syntax for ldapconnect(...)
             Utils::Log(LOG_DEBUG, "ldap_connect('{$this->sURI}')...");
             $this->rConnection = ldap_connect($this->sURI);
-            if ($this->rConnection === false)
-            {
-                echo "ldap_connect to {$this->sURI} failed, check the syntax of the <ldapuri> parameter !\n";
-                return false;
-            }
         }
         else
         {
@@ -128,12 +114,22 @@ TXT
             );
             Utils::Log(LOG_DEBUG, "ldap_connect('{$this->sHost}', '{$this->sPort}')...");
             $this->rConnection = ldap_connect($this->sHost, $this->sPort);
-            if ($this->rConnection === false)
-            {
-                echo "ldap_connect to {$this->sHost}:{$this->sPort} failed, check the syntax of your parameters !\n";
-                return false;
-            }
         }
+
+		// Test connection with a bind
+	    ldap_set_option($this->rConnection, LDAP_OPT_REFERRALS, 0);
+	    ldap_set_option($this->rConnection, LDAP_OPT_PROTOCOL_VERSION, 3);
+	    Utils::Log(LOG_DEBUG, "ldap_bind('{$this->sLogin}', '{$this->sPassword}')...");
+	    $this->bBindSuccess = @ldap_bind($this->rConnection, $this->sLogin, $this->sPassword);
+        if ($this->bBindSuccess === false)
+        {
+		    Utils::Log(LOG_ERR, "ldap_bind to {$this->sURI} failed, check your LDAP connection parameters (<ldapxxx>)!");
+		    Utils::Log(LOG_ERR, "ldap_bind('{$this->sLogin}', '{$this->sPassword}') FAILED (".ldap_error($this->rConnection).").");
+            return false;
+        }
+	    Utils::Log(LOG_DEBUG, "ldap_bind() Ok.");
+
+	    // Check if pagination is supported
         if ($this->PaginationIsSupported(true))
         {
             Utils::Log(LOG_INFO, "Pagination of results is supported by the LDAP server.");
