@@ -46,7 +46,6 @@ $aList = $oTestCollector->Search($sLdapdn, $sLdapfilter, $aAttributesToQuery);
 
 if ($aList === false) {
     die(json_encode([
-        'message' => "Erreur lors de la connexion au LDAP",
         'code' => 500
     ]));
 } // Something went wrong, exit with error !!
@@ -132,7 +131,6 @@ if ($idx ==0)
 $responseArray["numberOfUsers"] = $iNumberUser;
 $responseArray["persons"] = $ldapPersons;
 $responseArray['code'] = 200;
-$responseArray['message'] = 'Connexion effectuée avec succès; vous pouvez désormais synchroniser vos données dans les onglets ci-dessus.';
 
 // save temp test LDAP credentials
 $parameters = new SimpleXMLElement('<parameters/>');
