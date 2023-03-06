@@ -42,7 +42,7 @@ class LDAPCollector extends Collector
     protected $bBindSuccess = false;
     protected $bPaginationIsSupported = null;
     protected $iPageSize;
-    
+
     public function __construct()
     {
         parent::__construct();
@@ -58,31 +58,31 @@ class LDAPCollector extends Collector
         // Pagination
         $this->iPageSize = Utils::GetConfigurationValue('page_size', 0);
     }
-    
+
     /**
      * Tells if the connexion is already established
      * @return boolean
      */
     private function IsConnected()
     {
-        return $this->bBindSuccess;    
+        return $this->bBindSuccess;
     }
-    
+
     /**
-     * Perform the actual connection to the LDAP server (connect AND bind) 
+     * Perform the actual connection to the LDAP server (connect AND bind)
      * @return boolean
      */
     private function Connect()
     {
         if ($this->IsConnected()) return true;
-        
+
         if ($this->InitLDAP())
         {
 			return true;
         }
         return false;
     }
-    
+
     /**
      * Perform just the initialization of the connection parameters (no connection to the LDAP server)
      * @return boolean
@@ -90,9 +90,9 @@ class LDAPCollector extends Collector
     private function InitLDAP()
     {
         if ($this->rConnection !== null) return true;
-        
+
         $this->bBindSuccess = false;
-        
+
 		// Prepare the connection regarding the parameters
         if ($this->sURI !== '')
         {
@@ -142,7 +142,7 @@ TXT
                 Utils::Log(LOG_INFO, "Consider setting the parameter <page_size> to a value greater than zero in the configuration file in order to use pagination.");
             }
         }
-        else 
+        else
         {
             if ($this->iPageSize > 0)
             {
@@ -151,7 +151,26 @@ TXT
         }
         return true;
     }
-    
+
+	public function ConnectAndGetErrorInfo() : array
+	{
+		if ($this->Connect())
+		{
+			$aErrorInfo = [
+				'ldap_errno' => ldap_errno($this->rConnection),
+				'ldap_error' => ldap_error($this->rConnection),
+			];
+			$this->Disconnect();
+
+			return $aErrorInfo;
+		}
+
+		return [
+			'ldap_errno' => ldap_errno($this->rConnection),
+			'ldap_error' => ldap_error($this->rConnection),
+		];
+	}
+
     /**
      * Try to build a meaningful LDAP URI from the 2 parameters given
      * @param string $sHost
@@ -177,7 +196,7 @@ TXT
             return "ldap://$sHost";
         }
     }
-    
+
     /**
      * Closes the connexion to the LDAP server
      * @return void
@@ -255,14 +274,14 @@ TXT
             {
                 $aHumanReadableControls[] = $aWellKnownControls[$sControl];
             }
-            else 
+            else
             {
                 $aHumanReadableControls[] = $sControl;
             }
         }
         return $aHumanReadableControls;
     }
-   
+
     /**
      * Perform a search with the given parameters, also manages the connexion to the server
      * @param string $sDN The DN of the base object to search under
@@ -288,7 +307,7 @@ TXT
                     return false;
                 }
                 Utils::Log(LOG_DEBUG, "ldap_search() Ok.");
-                
+
                 $aList = ldap_get_entries($this->rConnection, $rSearch);
                 $this->Disconnect();
                 return $aList;
@@ -296,7 +315,7 @@ TXT
         }
         return false;
     }
-    
+
     private function PaginatedSearch($sDN, $sFilter, $aAttributes = array('*'))
     {
         $cookie = '';
@@ -306,10 +325,10 @@ TXT
         {
             Utils::Log(LOG_DEBUG, "ldap_search('$sDN', '$sFilter', ['".implode("', '", $aAttributes)."'])...");
             $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes, 0, 0, 0, LDAP_DEREF_NEVER, [['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => $this->iPageSize, 'cookie' => $cookie]]]);
-            
+
             $errcode = $matcheddn = $sErrmsg = $referrals = $aControls = null;
             @ldap_parse_result($this->rConnection, $rSearch, $errcode , $matcheddn , $sErrmsg , $referrals, $aControls);
-            
+
             if ($errcode !== 0)
             {
                 Utils::Log(LOG_ERR, "ldap_search('$sDN', '$sFilter') FAILED (".ldap_error($this->rConnection).").");
