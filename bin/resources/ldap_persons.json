@@ -1,0 +1,36 @@
+{
+  "code": 4,
+  "persons": {
+    "count": 1,
+    "0": {
+      "givenname": {
+        "count": 1,
+        "0": "jet"
+      },
+      "0": "givenname",
+      "sn": {
+        "count": 1,
+        "0": "Li"
+      },
+      "1": "sn",
+      "uid": {
+        "count": 1,
+        "0": "jli"
+      },
+      "2": "uid",
+      "uidnumber": {
+        "count": 1,
+        "0": "1005"
+      },
+      "3": "uidnumber",
+      "mail": {
+        "count": 1,
+        "0": "jet.li4@combodo.com"
+      },
+      "4": "mail",
+      "count": 5,
+      "dn": "cn=jet Li,ou=utilisateurs,dc=combodo,dc=com"
+    }
+  },
+  "msg": "Size limit exceeded"
+}

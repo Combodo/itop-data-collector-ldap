@@ -40,12 +40,7 @@ if ($bHelp || count($aUnknownParameters) > 0) {
 	}
 
 	echo "\n\nsuccess output example:\n";
-	$sExample = <<<JSON
-{
-    "code": 0,
-    "msg": "Success"
-}
-JSON;
+	$sExample = file_get_contents(sprintf("%s%sresources%sldap_users.json",__DIR__, DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR));
 	echo "success output example:\n$sExample\n";
 
 	$sExample = <<<JSON
@@ -60,13 +55,27 @@ JSON;
 
 Utils::$iConsoleLogLevel = Utils::ReadParameter('console_log_level', LOG_EMERG); // avoid logs to have json output
 
+$sLdapdn = Utils::GetConfigurationValue('ldapdn', 'DC=company,DC=com');
+$sLdapfilter = Utils::GetConfigurationValue('ldapuserfilter', '(&amp;(objectClass=person)(mail=*))');
+$aFields = Utils::GetConfigurationValue('user_fields', ['primary_key' => 'samaccountname']);
+//var_dump($aFields);
 $oTestCollector = new LDAPCollector();
-$aLdapErrorInfo = $oTestCollector->ConnectAndDisconnect();
-$iExitCode = $oTestCollector->getLastLdapErrorCode();
+$iSizeLimit = Utils::GetConfigurationValue('user_size_limit', 1);
+$oTestCollector->SetSizeLimit($iSizeLimit);
 
-$aOutput = [
-	'code' => $iExitCode,
-	'msg' => $oTestCollector->GetLastLdapErrorMessage()
-];
+$aLdapResults = $oTestCollector->Search($sLdapdn, $sLdapfilter, array_values($aFields));
+$iExitCode = $oTestCollector->getLastLdapErrorCode();
+if (0 === $iExitCode||4 === $iExitCode){
+	$aOutput = [
+		'code' => $iExitCode,
+		'users' => $aLdapResults,
+		'msg' => $oTestCollector->GetLastLdapErrorMessage(),
+	];
+} else {
+	$aOutput = [
+		'code' => $iExitCode,
+		'msg' => $oTestCollector->GetLastLdapErrorMessage(),
+	];
+}
 echo json_encode($aOutput);
 exit($iExitCode);

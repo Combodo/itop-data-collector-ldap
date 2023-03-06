@@ -43,6 +43,12 @@ class LDAPCollector extends Collector
     protected $bPaginationIsSupported = null;
     protected $iPageSize;
 
+	//limit size of ldap resultat list
+    protected $iSizeLimit = -1;
+
+	protected $sLastLdapErrorMessage = null;
+	protected $iLastLdapErrorCode = -1;
+
     public function __construct()
     {
         parent::__construct();
@@ -57,6 +63,11 @@ class LDAPCollector extends Collector
         $this->sPassword = Utils::GetConfigurationValue('ldappassword', 'password');
         // Pagination
         $this->iPageSize = Utils::GetConfigurationValue('page_size', 0);
+		//LDAP debug
+	    $sLdapOptDebugLevel = Utils::GetConfigurationValue('ldap_opt_debug_level', null);
+	    if (! is_null($sLdapOptDebugLevel) && is_int($sLdapOptDebugLevel)){
+		    ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, $sLdapOptDebugLevel);
+		}
     }
 
     /**
@@ -121,10 +132,12 @@ TXT
 	    ldap_set_option($this->rConnection, LDAP_OPT_PROTOCOL_VERSION, 3);
 	    Utils::Log(LOG_DEBUG, "ldap_bind('{$this->sLogin}', '{$this->sPassword}')...");
 	    $this->bBindSuccess = @ldap_bind($this->rConnection, $this->sLogin, $this->sPassword);
+	    $this->sLastLdapErrorMessage = ldap_error($this->rConnection);
+	    $this->iLastLdapErrorCode = ldap_errno($this->rConnection);
         if ($this->bBindSuccess === false)
         {
 		    Utils::Log(LOG_ERR, "ldap_bind to {$this->sURI} failed, check your LDAP connection parameters (<ldapxxx>)!");
-		    Utils::Log(LOG_ERR, "ldap_bind('{$this->sLogin}', '{$this->sPassword}') FAILED (".ldap_error($this->rConnection).").");
+	        Utils::Log(LOG_ERR, "ldap_bind('{$this->sLogin}', '{$this->sPassword}') FAILED (".$this->sLastLdapErrorMessage.").");
             return false;
         }
 	    Utils::Log(LOG_DEBUG, "ldap_bind() Ok.");
@@ -152,23 +165,12 @@ TXT
         return true;
     }
 
-	public function ConnectAndGetErrorInfo() : array
+	public function ConnectAndDisconnect() : void
 	{
 		if ($this->Connect())
 		{
-			$aErrorInfo = [
-				'ldap_errno' => ldap_errno($this->rConnection),
-				'ldap_error' => ldap_error($this->rConnection),
-			];
 			$this->Disconnect();
-
-			return $aErrorInfo;
 		}
-
-		return [
-			'ldap_errno' => ldap_errno($this->rConnection),
-			'ldap_error' => ldap_error($this->rConnection),
-		];
 	}
 
     /**
@@ -300,10 +302,12 @@ TXT
             else
             {
                 Utils::Log(LOG_DEBUG, "ldap_search('$sDN', '$sFilter', ['".implode("', '", $aAttributes)."'])...");
-                $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes);
+                $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes, 0, $this->iSizeLimit);
+	            $this->sLastLdapErrorMessage = ldap_error($this->rConnection);
+	            $this->iLastLdapErrorCode = ldap_errno($this->rConnection);
                 if ($rSearch === false)
                 {
-                    Utils::Log(LOG_ERR, "ldap_search('$sDN', '$sFilter') FAILED (".ldap_error($this->rConnection).").");
+                    Utils::Log(LOG_ERR, "ldap_search('$sDN', '$sFilter') FAILED (".$this->sLastLdapErrorMessage.").");
                     return false;
                 }
                 Utils::Log(LOG_DEBUG, "ldap_search() Ok.");
@@ -324,14 +328,15 @@ TXT
         do
         {
             Utils::Log(LOG_DEBUG, "ldap_search('$sDN', '$sFilter', ['".implode("', '", $aAttributes)."'])...");
-            $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes, 0, 0, 0, LDAP_DEREF_NEVER, [['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => $this->iPageSize, 'cookie' => $cookie]]]);
+            $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes, 0, $this->iSizeLimit, 0, LDAP_DEREF_NEVER, [['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => $this->iPageSize, 'cookie' => $cookie]]]);
 
             $errcode = $matcheddn = $sErrmsg = $referrals = $aControls = null;
             @ldap_parse_result($this->rConnection, $rSearch, $errcode , $matcheddn , $sErrmsg , $referrals, $aControls);
-
+	        $this->sLastLdapErrorMessage = $sErrmsg;
+	        $this->iLastLdapErrorCode = $errcode;
             if ($errcode !== 0)
             {
-                Utils::Log(LOG_ERR, "ldap_search('$sDN', '$sFilter') FAILED (".ldap_error($this->rConnection).").");
+                Utils::Log(LOG_ERR, "ldap_search('$sDN', '$sFilter') FAILED (".$this->sLastLdapErrorMessage.").");
                 return false;
             }
 
@@ -360,4 +365,19 @@ TXT
 
         return $aData;
     }
+
+	/**
+	 * @return string | null
+	 */
+	public function GetLastLdapErrorMessage() {
+		return $this->sLastLdapErrorMessage;
+	}
+
+	public function getLastLdapErrorCode(): int {
+		return $this->iLastLdapErrorCode;
+	}
+
+	public function SetSizeLimit(int $iSizeLimit){
+		$this->iSizeLimit = $iSizeLimit;
+	}
 }

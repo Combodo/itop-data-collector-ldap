@@ -7,6 +7,9 @@
 	<ldaplogin>CN=ITOP-LDAP,DC=company,DC=com</ldaplogin>
 	<ldappassword>password</ldappassword>
 	<!-- Parameters for Person synchronization -->
+	<person_size_limit>-1</person_size_limit>
+	<user_size_limit>-1</user_size_limit>
+	<!--ldap_opt_debug_level>7</ldap_opt_debug_level-->
 	<ldappersonfilter>(objectClass=person)</ldappersonfilter>
 	<itop_group_pattern>/^CN=itop-(.*),OU=.*/</itop_group_pattern>
 	<person_fields>
@@ -42,7 +45,7 @@
 	</user_defaults>
 	<!--
 		Set a non empty (and unique) prefix if you run several instances of the collector against the same iTop Server
-		This is the recommended method to collect data from several LDAP servers. (assign a unique prefix to each "source" LDAP server)  
+		This is the recommended method to collect data from several LDAP servers. (assign a unique prefix to each "source" LDAP server)
 		Note: prefix is defined here since json_placeholders (below) can only reference global parameters
 	-->
 	<prefix></prefix>
