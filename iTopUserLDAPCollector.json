@@ -25,8 +25,7 @@
 			"attribute_separator": ";",
 			"value_separator": ":",
 			"attribute_qualifier": "'",
-			"finalclass": "SynchroAttLinkSet",
-			"friendlyname": "allowed_org_list"
+			"finalclass": "SynchroAttLinkSet"
 		},
 		{
 			"attcode": "contactid",
@@ -34,24 +33,21 @@
 			"reconcile": "0",
 			"update_policy": "master_locked",
 			"reconciliation_attcode": "email",
-			"finalclass": "SynchroAttExtKey",
-			"friendlyname": "contactid"
+			"finalclass": "SynchroAttExtKey"
 		},
 		{
 			"attcode": "language",
 			"update": "1",
 			"reconcile": "0",
 			"update_policy": "master_locked",
-			"finalclass": "SynchroAttribute",
-			"friendlyname": "language"
+			"finalclass": "SynchroAttribute"
 		},
 		{
 			"attcode": "login",
 			"update": "1",
 			"reconcile": "1",
 			"update_policy": "master_locked",
-			"finalclass": "SynchroAttribute",
-			"friendlyname": "login"
+			"finalclass": "SynchroAttribute"
 		},
 		{
 			"attcode": "profile_list",
@@ -62,16 +58,14 @@
 			"attribute_separator": ";",
 			"value_separator": ":",
 			"attribute_qualifier": "'",
-			"finalclass": "SynchroAttLinkSet",
-			"friendlyname": "profile_list"
+			"finalclass": "SynchroAttLinkSet"
 		},
 		{
 			"attcode": "reset_pwd_token",
 			"update": "0",
 			"reconcile": "0",
 			"update_policy": "master_locked",
-			"finalclass": "SynchroAttribute",
-			"friendlyname": "reset_pwd_token"
+			"finalclass": "SynchroAttribute"
 		}
 	],
 	"user_delete_policy": "nobody",

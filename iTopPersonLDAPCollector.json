@@ -25,40 +25,35 @@
 			"attribute_separator": ";",
 			"value_separator": ":",
 			"attribute_qualifier": "'",
-			"finalclass": "SynchroAttLinkSet",
-			"friendlyname": "cis_list"
+			"finalclass": "SynchroAttLinkSet"
 		},
 		{
 			"attcode": "email",
 			"update": "1",
 			"reconcile": "1",
 			"update_policy": "master_locked",
-			"finalclass": "SynchroAttribute",
-			"friendlyname": "email"
+			"finalclass": "SynchroAttribute"
 		},
 		{
 			"attcode": "employee_number",
 			"update": "1",
 			"reconcile": "0",
 			"update_policy": "master_locked",
-			"finalclass": "SynchroAttribute",
-			"friendlyname": "employee_number"
+			"finalclass": "SynchroAttribute"
 		},
 		{
 			"attcode": "first_name",
 			"update": "1",
 			"reconcile": "1",
 			"update_policy": "master_locked",
-			"finalclass": "SynchroAttribute",
-			"friendlyname": "first_name"
+			"finalclass": "SynchroAttribute"
 		},
 		{
 			"attcode": "function",
 			"update": "1",
 			"reconcile": "0",
 			"update_policy": "master_locked",
-			"finalclass": "SynchroAttribute",
-			"friendlyname": "function"
+			"finalclass": "SynchroAttribute"
 		},
 		{
 			"attcode": "location_id",
@@ -66,8 +61,7 @@
 			"reconcile": "0",
 			"update_policy": "master_locked",
 			"reconciliation_attcode": "name",
-			"finalclass": "SynchroAttExtKey",
-			"friendlyname": "location_id"
+			"finalclass": "SynchroAttExtKey"
 		},
 		{
 			"attcode": "manager_id",
@@ -75,32 +69,28 @@
 			"reconcile": "0",
 			"update_policy": "master_locked",
 			"reconciliation_attcode": "email",
-			"finalclass": "SynchroAttExtKey",
-			"friendlyname": "manager_id"
+			"finalclass": "SynchroAttExtKey"
 		},
 		{
 			"attcode": "mobile_phone",
 			"update": "1",
 			"reconcile": "0",
 			"update_policy": "master_locked",
-			"finalclass": "SynchroAttribute",
-			"friendlyname": "mobile_phone"
+			"finalclass": "SynchroAttribute"
 		},
 		{
 			"attcode": "name",
 			"update": "1",
 			"reconcile": "1",
 			"update_policy": "master_locked",
-			"finalclass": "SynchroAttribute",
-			"friendlyname": "name"
+			"finalclass": "SynchroAttribute"
 		},
 		{
 			"attcode": "notify",
 			"update": "0",
 			"reconcile": "0",
 			"update_policy": "master_locked",
-			"finalclass": "SynchroAttribute",
-			"friendlyname": "notify"
+			"finalclass": "SynchroAttribute"
 		},
 		{
 			"attcode": "org_id",
@@ -108,24 +98,21 @@
 			"reconcile": "1",
 			"update_policy": "master_locked",
 			"reconciliation_attcode": "name",
-			"finalclass": "SynchroAttExtKey",
-			"friendlyname": "org_id"
+			"finalclass": "SynchroAttExtKey"
 		},
 		{
 			"attcode": "phone",
 			"update": "1",
 			"reconcile": "0",
 			"update_policy": "master_locked",
-			"finalclass": "SynchroAttribute",
-			"friendlyname": "phone"
+			"finalclass": "SynchroAttribute"
 		},
 		{
 			"attcode": "status",
 			"update": "1",
 			"reconcile": "0",
 			"update_policy": "master_locked",
-			"finalclass": "SynchroAttribute",
-			"friendlyname": "status"
+			"finalclass": "SynchroAttribute"
 		},
 		{
 			"attcode": "team_list",
@@ -136,8 +123,7 @@
 			"attribute_separator": ";",
 			"value_separator": ":",
 			"attribute_qualifier": "'",
-			"finalclass": "SynchroAttLinkSet",
-			"friendlyname": "team_list"
+			"finalclass": "SynchroAttLinkSet"
 		}
 	],
 	"user_delete_policy": "nobody",
