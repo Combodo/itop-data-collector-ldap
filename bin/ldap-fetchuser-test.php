@@ -39,9 +39,8 @@ if ($bHelp || count($aUnknownParameters) > 0) {
 		}
 	}
 
-	echo "\n\nsuccess output example:\n";
 	$sExample = file_get_contents(sprintf("%s%sresources%sldap_users.json",__DIR__, DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR));
-	echo "success output example:\n$sExample\n";
+	echo "Success output example:\n$sExample\n";
 
 	$sExample = <<<JSON
 {
@@ -49,7 +48,7 @@ if ($bHelp || count($aUnknownParameters) > 0) {
     "msg": "Invalid DN syntax"
 }
 JSON;
-	echo "error output example:\n$sExample\n";
+	echo "Error output example:\n$sExample\n";
 	exit(1);
 }
 
@@ -61,14 +60,26 @@ $aFields = Utils::GetConfigurationValue('user_fields', ['primary_key' => 'samacc
 //var_dump($aFields);
 $oTestCollector = new LDAPCollector();
 $iSizeLimit = Utils::GetConfigurationValue('user_size_limit', 1);
-$oTestCollector->SetSizeLimit($iSizeLimit);
+//$oTestCollector->SetSizeLimit($iSizeLimit);
 
 $aLdapResults = $oTestCollector->Search($sLdapdn, $sLdapfilter, array_values($aFields));
+$iCount = count($aLdapResults);
+if ($iSizeLimit === -1){
+	$aRes = $aLdapResults;
+} else {
+	$aRes = [];
+	for($i=0;$i<$iSizeLimit;$i++){
+		$aRes[]=$aLdapResults[$i];
+	}
+}
+
+
 $iExitCode = $oTestCollector->getLastLdapErrorCode();
 if (0 === $iExitCode||4 === $iExitCode){
 	$aOutput = [
+		'count' => $iCount,
 		'code' => $iExitCode,
-		'users' => $aLdapResults,
+		'users' => $aRes,
 		'msg' => $oTestCollector->GetLastLdapErrorMessage(),
 	];
 } else {

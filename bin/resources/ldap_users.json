@@ -1,8 +1,8 @@
 {
-  "code": 4,
-  "users": {
-    "count": 1,
-    "0": {
+  "count": 9,
+  "code": 0,
+  "users": [
+    {
       "mail": {
         "count": 1,
         "0": "jet.li4@combodo.com"
@@ -11,6 +11,6 @@
       "count": 1,
       "dn": "cn=jet Li,ou=utilisateurs,dc=combodo,dc=com"
     }
-  },
-  "msg": "Size limit exceeded"
+  ],
+  "msg": "Success"
 }
