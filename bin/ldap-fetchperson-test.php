@@ -59,7 +59,7 @@ $sLdapfilter = Utils::GetConfigurationValue('ldappersonfilter', '(&(objectClass=
 $aFields = Utils::GetConfigurationValue('person_fields', ['primary_key' => 'samaccountname']);
 //var_dump($aFields);
 $oTestCollector = new LDAPCollector();
-$iSizeLimit = Utils::GetConfigurationValue('person_size_limit', 1);
+$iSizeLimit = Utils::GetConfigurationValue('person_size_limit', 5);
 //$oTestCollector->SetSizeLimit($iSizeLimit);
 
 $aLdapResults = $oTestCollector->Search($sLdapdn, $sLdapfilter, array_values($aFields));
