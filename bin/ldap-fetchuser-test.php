@@ -63,8 +63,8 @@ $iSizeLimit = Utils::GetConfigurationValue('user_size_limit', 5);
 //$oTestCollector->SetSizeLimit($iSizeLimit);
 
 $aLdapResults = $oTestCollector->Search($sLdapdn, $sLdapfilter, array_values($aFields));
-$iCount = count($aLdapResults);
-if ($iSizeLimit === -1){
+$iCount = count($aLdapResults) - 1;
+if ("$iSizeLimit" === "-1"){
 	$aRes = $aLdapResults;
 } else {
 	$aRes = [];
