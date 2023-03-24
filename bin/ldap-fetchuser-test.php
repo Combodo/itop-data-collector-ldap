@@ -74,7 +74,7 @@ if ($iSizeLimit === -1){
 }
 
 
-$iExitCode = $oTestCollector->getLastLdapErrorCode();
+$iExitCode = $oTestCollector->GetLastLdapErrorCode();
 if (0 === $iExitCode||4 === $iExitCode){
 	$aOutput = [
 		'count' => $iCount,

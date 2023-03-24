@@ -62,7 +62,7 @@ Utils::$iConsoleLogLevel = Utils::ReadParameter('console_log_level', LOG_EMERG);
 
 $oTestCollector = new LDAPCollector();
 $aLdapErrorInfo = $oTestCollector->ConnectAndDisconnect();
-$iExitCode = $oTestCollector->getLastLdapErrorCode();
+$iExitCode = $oTestCollector->GetLastLdapErrorCode();
 
 $aOutput = [
 	'code' => $iExitCode,

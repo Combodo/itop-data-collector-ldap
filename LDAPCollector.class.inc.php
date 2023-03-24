@@ -393,7 +393,7 @@ TXT
 		return $this->sLastLdapErrorMessage;
 	}
 
-	public function getLastLdapErrorCode(): int {
+	public function GetLastLdapErrorCode(): int {
 		return $this->iLastLdapErrorCode;
 	}
 
