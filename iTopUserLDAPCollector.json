@@ -39,7 +39,14 @@
 			"attcode": "language",
 			"update": "1",
 			"reconcile": "0",
-			"update_policy": "master_locked",
+            "update_policy": "write_if_empty",
+            "finalclass": "SynchroAttribute"
+        },
+        {
+            "attcode": "ldap_server",
+            "update": "0",
+            "reconcile": "0",
+            "update_policy": "master_unlocked",
 			"finalclass": "SynchroAttribute"
 		},
 		{
@@ -53,7 +60,7 @@
 			"attcode": "profile_list",
 			"update": "1",
 			"reconcile": "0",
-			"update_policy": "$profile_list_update_policy$",
+            "update_policy": "write_if_empty",
 			"row_separator": "|",
 			"attribute_separator": ";",
 			"value_separator": ":",
@@ -64,7 +71,14 @@
 			"attcode": "reset_pwd_token",
 			"update": "0",
 			"reconcile": "0",
-			"update_policy": "master_locked",
+            "update_policy": "master_unlocked",
+            "finalclass": "SynchroAttribute"
+        },
+        {
+            "attcode": "status",
+            "update": "0",
+            "reconcile": "0",
+            "update_policy": "write_if_empty",
 			"finalclass": "SynchroAttribute"
 		}
 	],

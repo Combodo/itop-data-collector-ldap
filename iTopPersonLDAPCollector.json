@@ -96,7 +96,7 @@
 			"attcode": "org_id",
 			"update": "1",
 			"reconcile": "1",
-			"update_policy": "master_locked",
+            "update_policy": "write_if_empty",
 			"reconciliation_attcode": "name",
 			"finalclass": "SynchroAttExtKey"
 		},
@@ -111,7 +111,7 @@
 			"attcode": "status",
 			"update": "1",
 			"reconcile": "0",
-			"update_policy": "master_locked",
+            "update_policy": "master_unlocked",
 			"finalclass": "SynchroAttribute"
 		},
 		{
