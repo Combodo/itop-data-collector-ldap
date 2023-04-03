@@ -10,7 +10,8 @@
 
 	<!-- Parameters for Person synchronization -->
 	<person_size_limit>-1</person_size_limit>
-	<ldappersonfilter>(objectClass=person)</ldappersonfilter>
+	<ldappersonfilter>(&amp;(objectClass=person)(mail=*))</ldappersonfilter>
+
 	<itop_group_pattern>/^CN=itop-(.*),OU=.*/</itop_group_pattern>
 	<person_fields>
 		<!--  Mapping between LDAP fields and iTop Person's object fields -->
