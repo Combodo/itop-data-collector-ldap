@@ -62,7 +62,8 @@ $oTestCollector = new LDAPCollector();
 $iSizeLimit = Utils::GetConfigurationValue('person_size_limit', 5);
 //$oTestCollector->SetSizeLimit($iSizeLimit);
 
-$aLdapResults = $oTestCollector->Search($sLdapdn, $sLdapfilter, array_values($aFields));
+$aLdapResults = $oTestCollector->Search($sLdapdn, $sLdapfilter, ['*']); //array_values($aFields));
+//$aLdapResults = $oTestCollector->Search($sLdapdn, $sLdapfilter, array_values($aFields));
 $iCount = count($aLdapResults) - 1;
 if ("$iSizeLimit" === "-1"){
 	$aRes = $aLdapResults;
