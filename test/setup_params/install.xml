@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<installation>
+  <mode>install</mode>
+  <preinstall>
+    <copies type="array"/>
+  </preinstall>
+  <source_dir>datamodels/2.x/</source_dir>
+  <datamodel_version>3.0.0</datamodel_version>
+  <previous_configuration_file></previous_configuration_file>
+  <extensions_dir>data/production-modules</extensions_dir>
+  <target_env>production</target_env>
+  <workspace_dir></workspace_dir>
+  <database>
+    <server>localhost</server>
+    <user>iTop</user>
+    <pwd>**removed**</pwd>
+    <name>teamddev6</name>
+    <db_tls_enabled></db_tls_enabled>
+    <db_tls_ca></db_tls_ca>
+    <prefix></prefix>
+  </database>
+  <url>http://localhost/iTopTeam/</url>
+  <graphviz_path>/usr/bin/dot</graphviz_path>
+  <admin_account>
+    <user>admin</user>
+    <pwd>**removed**</pwd>
+    <language>EN US</language>
+  </admin_account>
+  <language>EN US</language>
+  <selected_modules type="array">
+    <item>authent-external</item>
+    <item>authent-local</item>
+    <item>itop-backup</item>
+    <item>itop-config</item>
+    <item>itop-files-information</item>
+    <item>itop-portal-base</item>
+    <item>itop-profiles-itil</item>
+    <item>itop-sla-computation</item>
+    <item>itop-structure</item>
+    <item>itop-welcome-itil</item>
+    <item>combodo-sla-computation</item>
+    <item>itop-attachments</item>
+    <item>combodo-db-tools</item>
+    <item>itop-object-copier</item>
+    <item>itop-admin-delegation-profiles</item>
+    <item>combodo-calendar-view</item>
+    <item>combodo-make-it-vip</item>
+    <item>combodo-notify-on-expiration</item>
+    <item>combodo-fulltext-search</item>
+    <item>itop-system-information</item>
+    <item>itsm-designer-connector</item>
+    <item>itop-config-mgmt</item>
+    <item>itop-datacenter-mgmt</item>
+    <item>itop-endusers-devices</item>
+    <item>itop-storage-mgmt</item>
+    <item>itop-virtualization-mgmt</item>
+    <item>itop-bridge-virtualization-storage</item>
+    <item>itop-request-mgmt</item>
+    <item>itop-service-mgmt</item>
+    <item>combodo-coverage-windows-computation</item>
+    <item>itop-tickets</item>
+    <item>combodo-autoclose-ticket</item>
+    <item>itop-standard-email-synchro</item>
+    <item>combodo-email-synchro</item>
+    <item>email-reply</item>
+    <item>precanned-replies</item>
+    <item>itop-portal</item>
+    <item>itop-bridge-cmdb-ticket</item>
+    <item>itop-liberty</item>
+    <item>itop-faq-light</item>
+    <item>combodo-monitoring</item>
+    <item>itop-saas-base</item>
+    <item>combodo-password-expiration</item>
+  </selected_modules>
+  <selected_extensions type="array">
+    <item>itop-structure</item>
+    <item>itop-config-mgmt</item>
+    <item>itop-ticket-mgmt-simple-ticket</item>
+    <item>itop-ticket-mgmt-simple-ticket-enhanced-portal</item>
+    <item>itop-saas-liberty</item>
+    <item>itop-saas-base</item>
+  </selected_extensions>
+  <sample_data></sample_data>
+  <old_addon></old_addon>
+  <options type="array"/>
+  <mysql_bindir></mysql_bindir>
+</installation>

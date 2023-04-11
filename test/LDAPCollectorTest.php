@@ -7,13 +7,7 @@ use LDAPCollector;
 use PHPUnit\Framework\TestCase;
 use Utils;
 
-define('APPROOT', dirname(__FILE__, 3). '/'); // correct way
-
-require_once (__DIR__.'/LdapMockingRessource.php');
-require_once (APPROOT.'core/parameters.class.inc.php');
-require_once (APPROOT.'core/utils.class.inc.php');
-require_once (APPROOT.'core/collector.class.inc.php');
-require_once (APPROOT.'collectors/LDAPCollector.class.inc.php');
+require_once (__DIR__.'/LDAPCollectorTest.php');
 
 /**
  * @runClassInSeparateProcess
@@ -289,26 +283,5 @@ class LDAPCollectorTest extends TestCase
 
 		$this->assertEquals(0, $this->oLDAPCollector->GetLastLdapErrorCode());
 		$this->assertEquals("Success", $this->oLDAPCollector->GetLastLdapErrorMessage());
-	}
-
-	/**
-	 * @param string $sObjectClass for example DBObject::class
-	 * @param string $sMethodName
-	 * @param ?object $oObject
-	 * @param array $aArgs
-	 *
-	 * @return mixed method result
-	 *
-	 * @throws \ReflectionException
-	 *
-	 * @since 2.7.4 3.0.0
-	 */
-	public function InvokeNonPublicMethod($sObjectClass, $sMethodName, $oObject, $aArgs)
-	{
-		$class = new \ReflectionClass($sObjectClass);
-		$method = $class->getMethod($sMethodName);
-		$method->setAccessible(true);
-
-		return $method->invokeArgs($oObject, $aArgs);
 	}
 }
