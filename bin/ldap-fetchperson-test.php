@@ -88,5 +88,5 @@ if (0 === $iExitCode||4 === $iExitCode){
 		'msg' => $oTestCollector->GetLastLdapErrorMessage(),
 	];
 }
-echo json_encode($aOutput);
+echo json_encode($aOutput, JSON_PARTIAL_OUTPUT_ON_ERROR);
 exit($iExitCode);
