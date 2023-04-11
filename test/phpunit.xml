@@ -2,7 +2,6 @@
   <testsuites>
     <testsuite name="testsU">
       <directory suffix="Test.php">.</directory>
-      <exclude>AbstractLDAPTest.php</exclude>
     </testsuite>
   </testsuites>
 </phpunit>

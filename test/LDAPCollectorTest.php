@@ -18,7 +18,6 @@ require_once (__DIR__.'/AbstractLDAPTest.php');
 
 /**
  * @runClassInSeparateProcess
- * @group beforesetup
  */
 class LDAPCollectorTest extends AbstractLDAPTest
 {
