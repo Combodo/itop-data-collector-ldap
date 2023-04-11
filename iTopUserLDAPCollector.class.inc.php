@@ -109,6 +109,11 @@ class iTopUserLDAPCollector extends LDAPCollector
 
     public function Prepare()
     {
+        $bRet = parent::Prepare();
+        if (!$bRet) {
+            return false;
+        }
+
         if (! $aData = $this->GetData()) return false;
         
         foreach ($aData as $idx => $aPerson)
