@@ -7,12 +7,19 @@ use LDAPCollector;
 use PHPUnit\Framework\TestCase;
 use Utils;
 
-require_once (__DIR__.'/LDAPCollectorTest.php');
+define('APPROOT', dirname(__FILE__, 3). '/'); // correct way
+
+require_once (__DIR__.'/LdapMockingRessource.php');
+require_once (APPROOT.'core/parameters.class.inc.php');
+require_once (APPROOT.'core/utils.class.inc.php');
+require_once (APPROOT.'core/collector.class.inc.php');
+require_once (APPROOT.'collectors/LDAPCollector.class.inc.php');
+require_once (__DIR__.'/AbstractLDAPTest.php');
 
 /**
  * @runClassInSeparateProcess
  */
-class LDAPCollectorTest extends TestCase
+class LDAPCollectorTest extends AbstractLDAPTest
 {
 	private $sTempConfigFile;
 	private $oConnexionResource;

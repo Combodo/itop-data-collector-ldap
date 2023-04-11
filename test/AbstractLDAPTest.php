@@ -4,15 +4,7 @@ namespace UnitTestFiles\Test;
 
 use PHPUnit\Framework\TestCase;
 
-define('APPROOT', dirname(__FILE__, 3). '/'); // correct way
-
-require_once (__DIR__.'/LdapMockingRessource.php');
-require_once (APPROOT.'core/parameters.class.inc.php');
-require_once (APPROOT.'core/utils.class.inc.php');
-require_once (APPROOT.'core/collector.class.inc.php');
-require_once (APPROOT.'collectors/LDAPCollector.class.inc.php');
-
-abstract class LDAPCollectorTest extends TestCase
+abstract class AbstractLDAPTest extends TestCase
 {
 	public function setUp(): void
 	{
