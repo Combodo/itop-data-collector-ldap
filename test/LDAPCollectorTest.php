@@ -7,7 +7,9 @@ use LDAPCollector;
 use PHPUnit\Framework\TestCase;
 use Utils;
 
-define('APPROOT', dirname(__FILE__, 3). '/'); // correct way
+if (! defined('APPROOT')){
+	define('APPROOT', dirname(__FILE__, 3). '/'); // correct way
+}
 
 require_once (__DIR__.'/LdapMockingRessource.php');
 require_once (APPROOT.'core/parameters.class.inc.php');
