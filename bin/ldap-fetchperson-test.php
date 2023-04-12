@@ -5,7 +5,7 @@
 
 define('APPROOT', dirname(__FILE__, 3). '/'); // correct way
 
-require_once (APPROOT.'collectors/LDAPSearchService.class.inc.php');
+require_once (APPROOT.'collectors/LDAPCliSearchService.class.inc.php');
 
 $aOptionalParams = [
 	'help' => 'boolean',
@@ -50,40 +50,11 @@ JSON;
 }
 
 Utils::$iConsoleLogLevel = Utils::ReadParameter('console_log_level', LOG_EMERG); // avoid logs to have json output
-
-$sLdapdn = Utils::GetConfigurationValue('ldapdn', 'DC=company,DC=com');
 $sLdapfilter = Utils::GetConfigurationValue('ldappersonfilter', '(&(objectClass=user)(objectCategory=person))');
-$aFields = Utils::GetConfigurationValue('person_fields', ['primary_key' => 'samaccountname']);
-//var_dump($aFields);
-$oLDAPSearchService = new LDAPSearchService();
 $iSizeLimit = Utils::GetConfigurationValue('person_size_limit', 5);
-//$oLDAPSearchService->SetSizeLimit($iSizeLimit);
 
-$aLdapResults = $oLDAPSearchService->Search($sLdapdn, $sLdapfilter, ['*']); //array_values($aFields));
-//$aLdapResults = $oLDAPSearchService->Search($sLdapdn, $sLdapfilter, array_values($aFields));
-$iCount = count($aLdapResults) - 1;
-if ("$iSizeLimit" === "-1"){
-	$aRes = $aLdapResults;
-} else {
-	$aRes = [];
-	for($i=0;$i<$iSizeLimit;$i++){
-		$aRes[]=$aLdapResults[$i];
-	}
-}
+$oLDAPCliSearchSearch = new LDAPCliSearchService();
 
-$iExitCode = $oLDAPSearchService->GetLastLdapErrorCode();
-if (0 === $iExitCode||4 === $iExitCode){
-	$aOutput = [
-		'count' => $iCount,
-		'code' => $iExitCode,
-		'persons' => $aRes,
-		'msg' => $oLDAPSearchService->GetLastLdapErrorMessage(),
-	];
-} else {
-	$aOutput = [
-		'code' => $iExitCode,
-		'msg' => $oLDAPSearchService->GetLastLdapErrorMessage(),
-	];
-}
-echo json_encode($aOutput, JSON_PARTIAL_OUTPUT_ON_ERROR);
-exit($iExitCode);
+$sJsonOutput = $oLDAPCliSearchSearch->Search($sLdapfilter, $iSizeLimit, ['*']);
+echo $sJsonOutput;
+exit($oLDAPCliSearchSearch->GetLastExitCode());
