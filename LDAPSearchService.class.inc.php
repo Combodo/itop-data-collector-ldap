@@ -1,6 +1,8 @@
 <?php
 
 require_once(APPROOT.'collectors/LDAPService.class.inc.php');
+require_once (APPROOT.'core/parameters.class.inc.php');
+require_once (APPROOT.'core/utils.class.inc.php');
 
 if (!defined("LDAP_CONTROL_PAGEDRESULTS")) {
 	define("LDAP_CONTROL_MANAGEDSAIT", "2.16.840.1.113730.3.4.2");
@@ -33,7 +35,7 @@ if (!defined("LDAP_CONTROL_PAGEDRESULTS")) {
  * Base class for LDAP collectors, handles the connexion to LDAP (connect & bind)
  * as well as basic searches
  */
-class LDAPCollector extends Collector
+class LDAPSearchService
 {
 	protected $oLDAPService;
 
@@ -55,8 +57,6 @@ class LDAPCollector extends Collector
 
     public function __construct()
     {
-        parent::__construct();
-
 	    $this->oLDAPService = new LDAPService();
 
         // let's read the configuration parameters

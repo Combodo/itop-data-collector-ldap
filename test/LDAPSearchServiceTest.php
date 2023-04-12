@@ -3,7 +3,7 @@
 namespace UnitTestFiles\Test;
 
 use LdapMockingRessource;
-use LDAPCollector;
+use LDAPSearchService;
 use PHPUnit\Framework\TestCase;
 use Utils;
 
@@ -12,21 +12,17 @@ if (! defined('APPROOT')){
 }
 
 require_once (__DIR__.'/LdapMockingRessource.php');
-require_once (APPROOT.'core/parameters.class.inc.php');
-require_once (APPROOT.'core/utils.class.inc.php');
-require_once (APPROOT.'core/collector.class.inc.php');
-require_once (APPROOT.'collectors/LDAPCollector.class.inc.php');
-require_once (__DIR__.'/AbstractLDAPTest.php');
+require_once (APPROOT.'collectors/LDAPSearchService.class.inc.php');
 
 /**
  * @runClassInSeparateProcess
  */
-class LDAPCollectorTest extends AbstractLDAPTest
+class LDAPSearchServiceTest extends AbstractLDAPTest
 {
 	private $sTempConfigFile;
 	private $oConnexionResource;
 	private $oResult;
-	private $oLDAPCollector;
+	private $LDAPSearchService;
 	private $oLDAPService;
 
 	public function setUp(): void
@@ -64,8 +60,8 @@ class LDAPCollectorTest extends AbstractLDAPTest
 		$argv[]="--config_file=".$this->sTempConfigFile;
 		$this->assertTrue(copy(__DIR__."/resources/$sFileName", $this->sTempConfigFile));
 
-		$this->oLDAPCollector = new LDAPCollector();
-		$this->oLDAPCollector->SetLDAPService($this->oLDAPService);
+		$this->LDAPSearchService = new LDAPSearchService();
+		$this->LDAPSearchService->SetLDAPService($this->oLDAPService);
 
 		$this->oLDAPService->expects($this->once())
 			->method('ldap_connect')
@@ -122,11 +118,11 @@ class LDAPCollectorTest extends AbstractLDAPTest
 			}
 		}
 
-		$this->InvokeNonPublicMethod(LDAPCollector::class, 'Connect', $this->oLDAPCollector, []);
+		$this->InvokeNonPublicMethod(LDAPSearchService::class, 'Connect', $this->LDAPSearchService, []);
 
 		if ($bSuccessBehaviourConfiguredInMock) {
-			$this->assertEquals($iErrorNo, $this->oLDAPCollector->GetLastLdapErrorCode());
-			$this->assertEquals($sErrorMsg, $this->oLDAPCollector->GetLastLdapErrorMessage());
+			$this->assertEquals($iErrorNo, $this->LDAPSearchService->GetLastLdapErrorCode());
+			$this->assertEquals($sErrorMsg, $this->LDAPSearchService->GetLastLdapErrorMessage());
 		}
 	}
 
@@ -158,13 +154,13 @@ class LDAPCollectorTest extends AbstractLDAPTest
 			->with($this->oConnexionResource)
 			->willReturn(true);
 
-		$this->assertEquals($iErrorNo, $this->oLDAPCollector->GetLastLdapErrorCode());
-		$this->assertEquals($sErrorMsg, $this->oLDAPCollector->GetLastLdapErrorMessage());
+		$this->assertEquals($iErrorNo, $this->LDAPSearchService->GetLastLdapErrorCode());
+		$this->assertEquals($sErrorMsg, $this->LDAPSearchService->GetLastLdapErrorMessage());
 
-		$this->InvokeNonPublicMethod(LDAPCollector::class, 'Disconnect', $this->oLDAPCollector, []);
+		$this->InvokeNonPublicMethod(LDAPSearchService::class, 'Disconnect', $this->LDAPSearchService, []);
 
-		$this->assertEquals($iErrorNo, $this->oLDAPCollector->GetLastLdapErrorCode());
-		$this->assertEquals($sErrorMsg, $this->oLDAPCollector->GetLastLdapErrorMessage());
+		$this->assertEquals($iErrorNo, $this->LDAPSearchService->GetLastLdapErrorCode());
+		$this->assertEquals($sErrorMsg, $this->LDAPSearchService->GetLastLdapErrorMessage());
 	}
 
 	public function SearchWithoutPaginationProvider(){
@@ -203,8 +199,8 @@ class LDAPCollectorTest extends AbstractLDAPTest
 			->willReturn(0, $iErrorNo);
 
 		$this->testConnect(false);
-		$this->assertEquals(0, $this->oLDAPCollector->GetLastLdapErrorCode());
-		$this->assertEquals("Success", $this->oLDAPCollector->GetLastLdapErrorMessage());
+		$this->assertEquals(0, $this->LDAPSearchService->GetLastLdapErrorCode());
+		$this->assertEquals("Success", $this->LDAPSearchService->GetLastLdapErrorMessage());
 
 		$sFilter = '(objectClass=person)';
 		$sDN = 'DC=company,DC=com';
@@ -215,17 +211,17 @@ class LDAPCollectorTest extends AbstractLDAPTest
 				->method('ldap_search')
 				->with($this->oConnexionResource, $sDN, $sFilter, ['*'] , 0, -1)
 				->willReturn(false);
-			$this->assertEquals($aExpecteRes, $this->oLDAPCollector->Search($sDN, $sFilter));
+			$this->assertEquals($aExpecteRes, $this->LDAPSearchService->Search($sDN, $sFilter));
 		} else {
 			$this->oLDAPService->expects($this->once())
 				->method('ldap_search')
 				->with($this->oConnexionResource, $sDN, $sFilter, $aAttributes, 0, -1)
 				->willReturn(false);
-			$this->assertEquals($aExpecteRes, $this->oLDAPCollector->Search($sDN, $sFilter, $aAttributes));
+			$this->assertEquals($aExpecteRes, $this->LDAPSearchService->Search($sDN, $sFilter, $aAttributes));
 		}
 
-		$this->assertEquals($iErrorNo, $this->oLDAPCollector->GetLastLdapErrorCode());
-		$this->assertEquals($sErrorMsg, $this->oLDAPCollector->GetLastLdapErrorMessage());
+		$this->assertEquals($iErrorNo, $this->LDAPSearchService->GetLastLdapErrorCode());
+		$this->assertEquals($sErrorMsg, $this->LDAPSearchService->GetLastLdapErrorMessage());
 	}
 
 
@@ -265,8 +261,8 @@ class LDAPCollectorTest extends AbstractLDAPTest
 		}
 
 		$this->testConnect(false, true, false);
-		$this->assertEquals(0, $this->oLDAPCollector->GetLastLdapErrorCode());
-		$this->assertEquals("Success", $this->oLDAPCollector->GetLastLdapErrorMessage());
+		$this->assertEquals(0, $this->LDAPSearchService->GetLastLdapErrorCode());
+		$this->assertEquals("Success", $this->LDAPSearchService->GetLastLdapErrorMessage());
 
 		$sFilter = '(objectClass=person)';
 		$sDN = 'DC=company,DC=com';
@@ -281,16 +277,16 @@ class LDAPCollectorTest extends AbstractLDAPTest
 				->method('ldap_search')
 				->with($this->oConnexionResource, $sDN, $sFilter, ['*'] , 0, -1)
 				->willReturn($rSearch);
-			$this->assertEquals($aExpecteRes, $this->oLDAPCollector->Search($sDN, $sFilter));
+			$this->assertEquals($aExpecteRes, $this->LDAPSearchService->Search($sDN, $sFilter));
 		} else {
 			$this->oLDAPService->expects($this->once())
 				->method('ldap_search')
 				->with($this->oConnexionResource, $sDN, $sFilter, $aAttributes, 0, -1)
 				->willReturn($rSearch);
-			$this->assertEquals($aExpecteRes, $this->oLDAPCollector->Search($sDN, $sFilter, $aAttributes));
+			$this->assertEquals($aExpecteRes, $this->LDAPSearchService->Search($sDN, $sFilter, $aAttributes));
 		}
 
-		$this->assertEquals(0, $this->oLDAPCollector->GetLastLdapErrorCode());
-		$this->assertEquals("Success", $this->oLDAPCollector->GetLastLdapErrorMessage());
+		$this->assertEquals(0, $this->LDAPSearchService->GetLastLdapErrorCode());
+		$this->assertEquals("Success", $this->LDAPSearchService->GetLastLdapErrorMessage());
 	}
 }

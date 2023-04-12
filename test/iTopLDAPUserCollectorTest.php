@@ -3,7 +3,7 @@
 namespace UnitTestFiles\Test;
 
 use LdapMockingRessource;
-use LDAPCollector;
+use LDAPSearchService;
 use PHPUnit\Framework\TestCase;
 use Utils;
 
@@ -12,12 +12,7 @@ if (! defined('APPROOT')){
 }
 
 require_once (__DIR__.'/LdapMockingRessource.php');
-require_once (APPROOT.'core/parameters.class.inc.php');
-require_once (APPROOT.'core/utils.class.inc.php');
-require_once (APPROOT.'core/collector.class.inc.php');
-require_once (APPROOT.'collectors/LDAPCollector.class.inc.php');
 require_once (APPROOT.'collectors/iTopUserLDAPCollector.class.inc.php');
-require_once (__DIR__.'/AbstractLDAPTest.php');
 
 /**
  * @runClassInSeparateProcess
@@ -28,7 +23,7 @@ class iTopLDAPUserCollectorTest extends AbstractLDAPTest
 	private $oConnexionResource;
 	private $oResult;
 	private $iTopUserLDAPCollector;
-	private $oLDAPService;
+	private $oLDAPSearchService;
 
 	public function setUp(): void
 	{
@@ -37,7 +32,7 @@ class iTopLDAPUserCollectorTest extends AbstractLDAPTest
 
 		$this->oConnexionResource = $this->createMock(LdapMockingRessource::class);
 		$this->oResult = $this->createMock(LdapMockingRessource::class);
-		$this->oLDAPService = $this->createMock(\LDAPService::class);
+		$this->oLDAPSearchService = $this->createMock(\LDAPSearchService::class);
 	}
 
 	public function tearDown(): void
@@ -65,8 +60,13 @@ class iTopLDAPUserCollectorTest extends AbstractLDAPTest
 		$argv[]="--config_file=".$this->sTempConfigFile;
 		$this->assertTrue(copy(__DIR__."/resources/$sFileName", $this->sTempConfigFile));
 
+		$this->oLDAPSearchService->expects($this->once())
+			->method('Search')
+			//->with($sUri, $sPort)
+			->willReturn(false);
+
 		$this->iTopUserLDAPCollector = new \iTopUserLDAPCollector();
-		$this->iTopUserLDAPCollector->SetLDAPService($this->oLDAPService);
+		$this->iTopUserLDAPCollector->SetLDAPSearchService($this->oLDAPSearchService);
 
 		$sGlobPattern = Utils::GetDataFilePath(\iTopUserLDAPCollector::class.'-*.csv');
 		$sSprintfPattern = str_replace('*', '%s', $sGlobPattern);

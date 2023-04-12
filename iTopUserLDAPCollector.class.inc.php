@@ -1,12 +1,14 @@
 <?php
 
-class iTopUserLDAPCollector extends LDAPCollector
+require_once(APPROOT.'collectors/AbstractLdapCollector.class.inc.php');
+
+class iTopUserLDAPCollector extends AbstractLdapCollector
 {
 
     protected $idx;
     protected $sLDAPDN;
     protected $sLDAPFilter;
-    
+
     protected $sDefaultOrganization;
     protected $sDefaultProfile;
     protected $sDefaultLanguage;
@@ -18,7 +20,7 @@ class iTopUserLDAPCollector extends LDAPCollector
     protected $sUserContactId;
 
     protected $aLogins;
-    
+
     public function __construct()
     {
         parent::__construct();
@@ -28,10 +30,10 @@ class iTopUserLDAPCollector extends LDAPCollector
         $this->sITopGroupPattern = Utils::GetConfigurationValue('itop_group_pattern', '/^CN=itop-(.*),OU=.*/');
         $this->aUserFields = Utils::GetConfigurationValue('user_fields', array('primary_key' => 'samaccountname'));
         $this->aUserDefaults = Utils::GetConfigurationValue('user_defaults', array());
-               
+
         $this->aLogins = array();
         $this->idx = 0;
-        
+
         // Safety check
         if (!array_key_exists('primary_key', $this->aUserFields))
         {
@@ -41,7 +43,7 @@ class iTopUserLDAPCollector extends LDAPCollector
         {
             Utils::Log(LOG_ERROR, "LDAPUsers: You MUST specify a mapping for the field:'login'");
         }
-        
+
         // For debugging dump the mapping and default values
         $sMapping = '';
         foreach($this->aUserFields as $sAttCode => $sField)
@@ -60,7 +62,7 @@ class iTopUserLDAPCollector extends LDAPCollector
         {
             $sMapping .= "   iTop 'profile_list' is filled from LDAP 'memberof' using the regular expression {$this->sITopGroupPattern} to extract the name of the iTop profile\n";
         }
-        
+
         $bDefaultProfilesListProvided = false;
         foreach($this->aUserDefaults as $sAttCode => $sDefaultValue)
         {
@@ -69,7 +71,7 @@ class iTopUserLDAPCollector extends LDAPCollector
             {
                 $bDefaultProfilesListProvided = true;
             }
-            
+
             if (!array_key_exists($sAttCode, $this->aUserFields))
             {
                 $sMapping .= "   iTop '$sAttCode' is filled with the constant value '$sDefaultValue'\n";
@@ -81,12 +83,12 @@ class iTopUserLDAPCollector extends LDAPCollector
         }
         Utils::Log(LOG_DEBUG, "LDAPUsers: Mapping of the fields:\n$sMapping");
     }
-    
+
     public function AttributeIsOptional($sAttCode)
     {
         if ($sAttCode == 'status') return true;
         if ($sAttCode == 'reset_pwd_token') return true; // depends on the type of User (UserLDAP vs UserExternal)
-        
+
         return parent::AttributeIsOptional($sAttCode);
     }
 
@@ -97,8 +99,8 @@ class iTopUserLDAPCollector extends LDAPCollector
         {
             $aAttributes[] = 'memberof';
         }
-        $aList = $this->Search($this->sLDAPDN, $this->sLDAPFilter, $aAttributes);
-        
+        $aList = $this->GetLDAPSearchService()->Search($this->sLDAPDN, $this->sLDAPFilter, $aAttributes);
+
         if ($aList !== false)
         {
             $iNumberOfUsers = count($aList) - 1;
@@ -115,41 +117,41 @@ class iTopUserLDAPCollector extends LDAPCollector
         }
 
         if (! $aData = $this->GetData()) return false;
-        
+
         foreach ($aData as $idx => $aPerson)
         {
             if (isset($aPerson[$this->aUserFields['primary_key']][0]) && $aPerson[$this->aUserFields['primary_key']][0] != "")
             {
                 $aValues = array();
-                
+
                 // Primary key must be the first column
                 $aValues['primary_key'] = $aPerson[$this->aUserFields['primary_key']][0];
-                
+
                 // First set the default values (as well as the constant values for fields which are not collected)
                 foreach($this->aUserDefaults as $sFieldCode => $sValue)
                 {
                     if ($sFieldCode == 'profile') continue; // Not an actual field code, see below for filling the list of profiles
-                    
+
                     $aValues[$sFieldCode] = $sValue;
                 }
- 
+
                 // Then read the actual values (if any)
                 foreach($this->aUserFields as $sFieldCode => $sLDAPAttribute)
                 {
                     if ($sFieldCode == 'primary_key') continue; // Aalready processed, must be the first column
-                    
+
                     $sDefaultValue = isset($this->aUserDefaults[$sFieldCode]) ? $this->aUserDefaults[$sFieldCode] : '';
                     $sFieldValue = isset($aPerson[$sLDAPAttribute][0]) ? $aPerson[$sLDAPAttribute][0] : $sDefaultValue;
-                    
+
                     $aValues[$sFieldCode] = $sFieldValue;
                 }
-                
+
                 // Collecting list of "member of group" starting with the given pattern
                 $sProfileList = '';
                 if ($this->sSynchronizeProfiles != 'no')
                 {
                     $sPattern = $this->sITopGroupPattern;
-                    
+
                     if (isset($aPerson['memberof']) && ($aPerson['memberof']['count'] != 0))
                     {
                         foreach ($aPerson['memberof'] as $sMember)
@@ -169,13 +171,13 @@ class iTopUserLDAPCollector extends LDAPCollector
                         $aValues['profile_list'] = $sProfileList;
                     }
                 }
-                
+
                 // Make sure that the list of profiles is never empty since it is mandatory for a user to have at least one profile
                 if ((!isset($aValues['profile_list'])) || ($aValues['profile_list'] == ''))
                 {
                     $aValues['profile_list'] = "profileid->name:".$this->aUserDefaults['profile'];
                 }
-                
+
                 $this->aLogins[] = $aValues;
             }
             else
@@ -196,7 +198,7 @@ class iTopUserLDAPCollector extends LDAPCollector
         {
             $aLogin = $this->aLogins[$this->idx];
             $this->idx++;
-            
+
             return $aLogin;
         }
         return false;

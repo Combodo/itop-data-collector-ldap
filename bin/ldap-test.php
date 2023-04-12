@@ -7,10 +7,7 @@
 
 define('APPROOT', dirname(dirname(dirname(__FILE__))) . '/');
 
-require_once (APPROOT.'core/parameters.class.inc.php');
-require_once (APPROOT.'core/utils.class.inc.php');
-require_once (APPROOT.'core/collector.class.inc.php');
-require_once (APPROOT.'collectors/LDAPCollector.class.inc.php');
+require_once (APPROOT.'collectors/LDAPSearchService.class.inc.php');
 
 Utils::$iConsoleLogLevel = LOG_DEBUG; // Force debug mode
 
@@ -35,8 +32,8 @@ else
 // Uncomment the line below if you really want to debug what's happening at the ldap level...
 //ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7);
 
-$oTestCollector = new LDAPCollector(); 
-$aList = $oTestCollector->Search($sLdapdn, $sLdapfilter, $aAttributesToQuery);
+$oLDAPSearchService = new LDAPSearchService();
+$aList = $oLDAPSearchService->Search($sLdapdn, $sLdapfilter, $aAttributesToQuery);
 
 if ($aList === false) exit -1; // Something went wrong, exit with error !!
 
@@ -69,7 +66,7 @@ foreach ($aList as $aLdapUser)
                 $iKeyLen = strlen($sKey);
                 $sFirstField = $sKey . ': ';
                 $sPlaceHolder = str_repeat(' ', $iKeyLen + 2);
-                
+
                 $iCount = $data['count'];
                 $aValues = array();
                 for ($i = 0; $i < $iCount; $i ++)
