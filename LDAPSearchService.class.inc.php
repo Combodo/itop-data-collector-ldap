@@ -1,5 +1,9 @@
 <?php
 
+require_once(APPROOT.'collectors/LDAPService.class.inc.php');
+require_once (APPROOT.'core/parameters.class.inc.php');
+require_once (APPROOT.'core/utils.class.inc.php');
+
 if (!defined("LDAP_CONTROL_PAGEDRESULTS")) {
 	define("LDAP_CONTROL_MANAGEDSAIT", "2.16.840.1.113730.3.4.2");
 	define("LDAP_CONTROL_PROXY_AUTHZ", "2.16.840.1.113730.3.4.18");
@@ -31,8 +35,10 @@ if (!defined("LDAP_CONTROL_PAGEDRESULTS")) {
  * Base class for LDAP collectors, handles the connexion to LDAP (connect & bind)
  * as well as basic searches
  */
-class LDAPCollector extends Collector
+class LDAPSearchService
 {
+	protected $oLDAPService;
+
 	protected $sHost;
 	protected $sPort;
 	protected $sURI;
@@ -51,7 +57,8 @@ class LDAPCollector extends Collector
 
     public function __construct()
     {
-        parent::__construct();
+	    $this->oLDAPService = new LDAPService();
+
         // let's read the configuration parameters
         // No connection method an URI like ldap://<server>:<port> or ldaps://<server>:<port>
         $this->sURI = Utils::GetConfigurationValue('ldapuri', '');
@@ -63,12 +70,16 @@ class LDAPCollector extends Collector
         $this->sPassword = Utils::GetConfigurationValue('ldappassword', 'password');
         // Pagination
         $this->iPageSize = Utils::GetConfigurationValue('page_size', 0);
-		//LDAP debug
-	    $sLdapOptDebugLevel = Utils::GetConfigurationValue('ldap_opt_debug_level', null);
-	    if (! is_null($sLdapOptDebugLevel) && is_int($sLdapOptDebugLevel)){
-		    ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, $sLdapOptDebugLevel);
-		}
     }
+
+	/**
+	 * @param \LDAPService $oLDAPService
+	 * used for mock/test only
+	 * @return void
+	 */
+	public function SetLDAPService(LDAPService $oLDAPService){
+		$this->oLDAPService = $oLDAPService;
+	}
 
     /**
      * Tells if the connexion is already established
@@ -109,7 +120,8 @@ class LDAPCollector extends Collector
         {
             // New syntax for ldapconnect(...)
             Utils::Log(LOG_DEBUG, "ldap_connect('{$this->sURI}')...");
-            $this->rConnection = ldap_connect($this->sURI);
+	        $this->rConnection = $this->oLDAPService->ldap_connect($this->sURI);
+
         }
         else
         {
@@ -124,16 +136,22 @@ The value should be something like:
 TXT
             );
             Utils::Log(LOG_DEBUG, "ldap_connect('{$this->sHost}', '{$this->sPort}')...");
-            $this->rConnection = ldap_connect($this->sHost, $this->sPort);
+	        $this->rConnection = $this->oLDAPService->ldap_connect($this->sHost, $this->sPort);
         }
 
 		// Test connection with a bind
-	    ldap_set_option($this->rConnection, LDAP_OPT_REFERRALS, 0);
-	    ldap_set_option($this->rConnection, LDAP_OPT_PROTOCOL_VERSION, 3);
+
+	    //LDAP debug
+	    $sLdapOptDebugLevel = Utils::GetConfigurationValue('ldap_opt_debug_level', null);
+	    if (! is_null($sLdapOptDebugLevel) && is_int($sLdapOptDebugLevel)){
+		    $this->oLDAPService->ldap_set_option($this->rConnection, LDAP_OPT_DEBUG_LEVEL, $sLdapOptDebugLevel);
+	    }
+	    $this->oLDAPService->ldap_set_option($this->rConnection, LDAP_OPT_REFERRALS, 0);
+	    $this->oLDAPService->ldap_set_option($this->rConnection, LDAP_OPT_PROTOCOL_VERSION, 3);
 	    Utils::Log(LOG_DEBUG, "ldap_bind('{$this->sLogin}', '{$this->sPassword}')...");
-	    $this->bBindSuccess = @ldap_bind($this->rConnection, $this->sLogin, $this->sPassword);
-	    $this->sLastLdapErrorMessage = ldap_error($this->rConnection);
-	    $this->iLastLdapErrorCode = ldap_errno($this->rConnection);
+	    $this->bBindSuccess = $this->oLDAPService->ldap_bind($this->rConnection, $this->sLogin, $this->sPassword);
+	    $this->sLastLdapErrorMessage = $this->oLDAPService->ldap_error($this->rConnection);
+	    $this->iLastLdapErrorCode = $this->oLDAPService->ldap_errno($this->rConnection);
         if ($this->bBindSuccess === false)
         {
 		    Utils::Log(LOG_ERR, "ldap_bind to {$this->sURI} failed, check your LDAP connection parameters (<ldapxxx>)!");
@@ -205,7 +223,7 @@ TXT
      */
     private function Disconnect()
     {
-        ldap_close($this->rConnection);
+	    $this->oLDAPService->ldap_close($this->rConnection);
         $this->rConnection = null;
         $this->bBindSuccess = false;
     }
@@ -220,8 +238,8 @@ TXT
 			        Utils::Log(LOG_WARNING, "PHP 7.3.0 or above is needed to support pagination");
 		        }
 	        } else {
-		        $result = ldap_read($this->rConnection, '', '(objectClass=*)', ['supportedControl']);
-		        $aData = ldap_get_entries($this->rConnection, $result);
+		        $result = $this->oLDAPService->ldap_read($this->rConnection, '', '(objectClass=*)', ['supportedControl']);
+		        $aData = $this->oLDAPService->ldap_get_entries($this->rConnection, $result);
 		        $aControls = $this->LdapControlsToLabels($aData[0]['supportedcontrol']);
 
 		        Utils::Log(LOG_DEBUG, "Supported controls: ".implode(', ', $aControls).".");
@@ -302,11 +320,11 @@ TXT
             else
             {
                 Utils::Log(LOG_DEBUG, "ldap_search('$sDN', '$sFilter', ['".implode("', '", $aAttributes)."'])...");
-                $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes, 0, $this->iSizeLimit);
+                $rSearch = $this->oLDAPService->ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes, 0, $this->iSizeLimit);
 
-				@ldap_count_entries($this->rConnection);
-	            $this->sLastLdapErrorMessage = ldap_error($this->rConnection);
-	            $this->iLastLdapErrorCode = ldap_errno($this->rConnection);
+	            $this->oLDAPService->ldap_count_entries($this->rConnection, $rSearch);
+	            $this->sLastLdapErrorMessage = $this->oLDAPService->ldap_error($this->rConnection);
+	            $this->iLastLdapErrorCode = $this->oLDAPService->ldap_errno($this->rConnection);
                 if ($rSearch === false)
                 {
                     Utils::Log(LOG_ERR, "ldap_search('$sDN', '$sFilter') FAILED (".$this->sLastLdapErrorMessage.").");
@@ -314,7 +332,7 @@ TXT
                 }
                 Utils::Log(LOG_DEBUG, "ldap_search() Ok.");
 
-                $aList = ldap_get_entries($this->rConnection, $rSearch);
+                $aList = $this->oLDAPService->ldap_get_entries($this->rConnection, $rSearch);
                 $this->Disconnect();
                 return $aList;
             }
@@ -330,10 +348,10 @@ TXT
         do
         {
             Utils::Log(LOG_DEBUG, "ldap_search('$sDN', '$sFilter', ['".implode("', '", $aAttributes)."'])...");
-            $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes, 0, $this->iSizeLimit, 0, LDAP_DEREF_NEVER, [['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => $this->iPageSize, 'cookie' => $cookie]]]);
+            $rSearch = $this->oLDAPService->ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes, 0, $this->iSizeLimit, 0, LDAP_DEREF_NEVER, [['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => $this->iPageSize, 'cookie' => $cookie]]]);
 
             $errcode = $matcheddn = $sErrmsg = $referrals = $aControls = null;
-            @ldap_parse_result($this->rConnection, $rSearch, $errcode , $matcheddn , $sErrmsg , $referrals, $aControls);
+	        $this->oLDAPService->ldap_parse_result($this->rConnection, $rSearch, $errcode , $matcheddn , $sErrmsg , $referrals, $aControls);
 	        $this->sLastLdapErrorMessage = $sErrmsg;
 	        $this->iLastLdapErrorCode = $errcode;
             if ($errcode !== 0)
@@ -342,7 +360,7 @@ TXT
                 return false;
             }
 
-            $aList = ldap_get_entries($this->rConnection, $rSearch);
+            $aList = $this->oLDAPService->ldap_get_entries($this->rConnection, $rSearch);
             foreach($aList as $values)
             {
                 if (is_array($values)) // ignore the first element of the results: 'count' => <number>
@@ -375,7 +393,7 @@ TXT
 		return $this->sLastLdapErrorMessage;
 	}
 
-	public function getLastLdapErrorCode(): int {
+	public function GetLastLdapErrorCode(): int {
 		return $this->iLastLdapErrorCode;
 	}
 

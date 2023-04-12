@@ -1,6 +1,8 @@
 <?php
 
-class iTopPersonLDAPCollector extends LDAPCollector
+require_once(APPROOT.'collectors/AbstractLdapCollector.class.inc.php');
+
+class iTopPersonLDAPCollector extends AbstractLdapCollector
 {
 
     protected $idx;
@@ -69,7 +71,7 @@ class iTopPersonLDAPCollector extends LDAPCollector
     protected function GetData()
     {
         $aAttributes = array_values($this->aPersonFields);
-        $aList = $this->Search($this->sLDAPDN, $this->sLDAPFilter, $aAttributes);
+        $aList = $this->GetLDAPSearchService()->Search($this->sLDAPDN, $this->sLDAPFilter, $aAttributes);
 
         if ($aList !== false)
         {
@@ -85,7 +87,7 @@ class iTopPersonLDAPCollector extends LDAPCollector
 	    if (!$bRet) {
 		    return false;
 	    }
-		
+
         if (! $aData = $this->GetData()) return false;
 
         foreach ($aData as $aPerson)

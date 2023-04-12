@@ -1,5 +1,4 @@
 <?php
-require_once(APPROOT.'collectors/LDAPCollector.class.inc.php');
 require_once(APPROOT.'collectors/iTopPersonLDAPCollector.class.inc.php');
 require_once(APPROOT.'collectors/iTopUserLDAPCollector.class.inc.php');
 

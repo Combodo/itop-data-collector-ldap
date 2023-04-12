@@ -5,10 +5,7 @@
 
 define('APPROOT', dirname(__FILE__, 3). '/'); // correct way
 
-require_once (APPROOT.'core/parameters.class.inc.php');
-require_once (APPROOT.'core/utils.class.inc.php');
-require_once (APPROOT.'core/collector.class.inc.php');
-require_once (APPROOT.'collectors/LDAPCollector.class.inc.php');
+require_once (APPROOT.'collectors/LDAPSearchService.class.inc.php');
 
 $aOptionalParams = [
 	'help' => 'boolean',
@@ -58,12 +55,12 @@ $sLdapdn = Utils::GetConfigurationValue('ldapdn', 'DC=company,DC=com');
 $sLdapfilter = Utils::GetConfigurationValue('ldappersonfilter', '(&(objectClass=user)(objectCategory=person))');
 $aFields = Utils::GetConfigurationValue('person_fields', ['primary_key' => 'samaccountname']);
 //var_dump($aFields);
-$oTestCollector = new LDAPCollector();
+$oLDAPSearchService = new LDAPSearchService();
 $iSizeLimit = Utils::GetConfigurationValue('person_size_limit', 5);
-//$oTestCollector->SetSizeLimit($iSizeLimit);
+//$oLDAPSearchService->SetSizeLimit($iSizeLimit);
 
-$aLdapResults = $oTestCollector->Search($sLdapdn, $sLdapfilter, ['*']); //array_values($aFields));
-//$aLdapResults = $oTestCollector->Search($sLdapdn, $sLdapfilter, array_values($aFields));
+$aLdapResults = $oLDAPSearchService->Search($sLdapdn, $sLdapfilter, ['*']); //array_values($aFields));
+//$aLdapResults = $oLDAPSearchService->Search($sLdapdn, $sLdapfilter, array_values($aFields));
 $iCount = count($aLdapResults) - 1;
 if ("$iSizeLimit" === "-1"){
 	$aRes = $aLdapResults;
@@ -74,18 +71,18 @@ if ("$iSizeLimit" === "-1"){
 	}
 }
 
-$iExitCode = $oTestCollector->getLastLdapErrorCode();
+$iExitCode = $oLDAPSearchService->GetLastLdapErrorCode();
 if (0 === $iExitCode||4 === $iExitCode){
 	$aOutput = [
 		'count' => $iCount,
 		'code' => $iExitCode,
 		'persons' => $aRes,
-		'msg' => $oTestCollector->GetLastLdapErrorMessage(),
+		'msg' => $oLDAPSearchService->GetLastLdapErrorMessage(),
 	];
 } else {
 	$aOutput = [
 		'code' => $iExitCode,
-		'msg' => $oTestCollector->GetLastLdapErrorMessage(),
+		'msg' => $oLDAPSearchService->GetLastLdapErrorMessage(),
 	];
 }
 echo json_encode($aOutput, JSON_PARTIAL_OUTPUT_ON_ERROR);

@@ -5,10 +5,7 @@
 
 define('APPROOT', dirname(__FILE__, 3). '/'); // correct way
 
-require_once (APPROOT.'core/parameters.class.inc.php');
-require_once (APPROOT.'core/utils.class.inc.php');
-require_once (APPROOT.'core/collector.class.inc.php');
-require_once (APPROOT.'collectors/LDAPCollector.class.inc.php');
+require_once (APPROOT.'collectors/LDAPSearchService.class.inc.php');
 
 $aOptionalParams = [
 	'help' => 'boolean',
@@ -60,13 +57,13 @@ JSON;
 
 Utils::$iConsoleLogLevel = Utils::ReadParameter('console_log_level', LOG_EMERG); // avoid logs to have json output
 
-$oTestCollector = new LDAPCollector();
-$aLdapErrorInfo = $oTestCollector->ConnectAndDisconnect();
-$iExitCode = $oTestCollector->getLastLdapErrorCode();
+$oLDAPSearchService = new LDAPSearchService();
+$oLDAPSearchService->ConnectAndDisconnect();
+$iExitCode = $oLDAPSearchService->GetLastLdapErrorCode();
 
 $aOutput = [
 	'code' => $iExitCode,
-	'msg' => $oTestCollector->GetLastLdapErrorMessage()
+	'msg' => $oLDAPSearchService->GetLastLdapErrorMessage()
 ];
 echo json_encode($aOutput);
 exit($iExitCode);
