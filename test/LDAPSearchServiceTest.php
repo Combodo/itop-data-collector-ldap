@@ -12,6 +12,7 @@ if (! defined('APPROOT')){
 }
 
 require_once (__DIR__.'/LdapMockingRessource.php');
+require_once (__DIR__.'/AbstractLDAPTest.php');
 require_once (APPROOT.'collectors/LDAPSearchService.class.inc.php');
 
 /**

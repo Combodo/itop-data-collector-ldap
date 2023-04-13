@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<parameters>
+  <person_fields>
+    <primary_key>uid</primary_key>
+    <name>sn</name>
+    <status></status>
+    <org_id></org_id>
+    <first_name>givenname</first_name>
+    <email>mail</email>
+    <phone>telephonenumber</phone>
+    <notify></notify>
+    <function>title</function>
+    <employee_number>employeenumber</employee_number>
+    <mobile_phone>mobile</mobile_phone>
+    <location_id></location_id>
+    <manager_id></manager_id>
+    <vip></vip>
+  </person_fields>
+  <user_fields>
+    <primary_key>mail</primary_key>
+    <login>mail</login>
+    <status></status>
+    <contactid>mail</contactid>
+  </user_fields>
+
+</parameters>

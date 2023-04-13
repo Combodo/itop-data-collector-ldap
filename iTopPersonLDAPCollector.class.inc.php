@@ -68,9 +68,16 @@ class iTopPersonLDAPCollector extends AbstractLdapCollector
         return parent::AttributeIsOptional($sAttCode);
     }
 
+	/**
+	 * function created to test GetFieldKeysToSearchOnLDAPSide
+	 */
+	protected function GetFieldsToFetch() : array{
+		return $this->GetFieldKeysToSearchOnLDAPSide($this->aPersonFields);
+	}
+
     protected function GetData()
     {
-        $aAttributes = array_values($this->aPersonFields);
+        $aAttributes = $this->GetFieldsToFetch();
         $aList = $this->GetLDAPSearchService()->Search($this->sLDAPDN, $this->sLDAPFilter, $aAttributes);
 
         if ($aList !== false)

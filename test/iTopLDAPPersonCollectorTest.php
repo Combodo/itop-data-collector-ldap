@@ -12,6 +12,7 @@ if (! defined('APPROOT')){
 }
 
 require_once (__DIR__.'/LdapMockingRessource.php');
+require_once (__DIR__.'/AbstractLDAPTest.php');
 require_once (APPROOT.'collectors/iTopPersonLDAPCollector.class.inc.php');
 
 /**
@@ -44,25 +45,13 @@ class iTopLDAPPersonCollectorTest extends AbstractLDAPTest
 		}
 	}
 
-	public function ConnectProvider(){
-		return [
-			'connect via uri' => [ true, true, true, 'connect-via-uri.xml', 'ldap://myldap.fr', '389'],
-			'connect with port and host' => [ true, true, true, 'connect-with-port-host.xml', 'myldap2.fr', '666'],
-			'connect with host' => [ true, true, true, 'connect-with-host.xml', 'myldap2.fr', '389'],
-		];
-	}
-
-	/**
-	 * @dataProvider ConnectProvider
-	 */
-	public function testPreviousCollectFilesAreRemovedDuringPrepare($bSuccessBehaviourConfiguredInMock, $bLdapBindOk=true, $bDefineGetEntriesBehaviour=true, $sFileName='connect-via-uri.xml', $sUri='ldap://myldap.fr', $sPort='389'){
+	public function testPreviousCollectFilesAreRemovedDuringPrepare(){
 		global $argv;
 		$argv[]="--config_file=".$this->sTempConfigFile;
-		$this->assertTrue(copy(__DIR__."/resources/$sFileName", $this->sTempConfigFile));
+		$this->assertTrue(copy(__DIR__."/resources/connect-via-uri.xml", $this->sTempConfigFile));
 
 		$this->oLDAPSearchService->expects($this->once())
 			->method('Search')
-			//->with($sUri, $sPort)
 			->willReturn(false);
 
 		$this->iTopPersonLDAPCollector = new \iTopPersonLDAPCollector();
@@ -84,5 +73,56 @@ class iTopLDAPPersonCollectorTest extends AbstractLDAPTest
 		foreach ($aFilesToRemove as $sFile){
 			$this->assertFalse(is_file($sFile), "CSV file should have been removed");
 		}
+	}
+
+	public function testPrepareAndFetch(){
+		global $argv;
+		$argv[]="--config_file=".$this->sTempConfigFile;
+		$this->assertTrue(copy(__DIR__."/resources/params.ldapfetch.xml", $this->sTempConfigFile));
+
+		$aSearchResult = json_decode(file_get_contents(__DIR__.'/resources/fetch-person-test.json'), true);
+		$aExpectedRes = [
+			'uid',
+			'sn',
+			'givenname',
+			'mail',
+			'telephonenumber',
+			'mobile',
+			'title',
+			'employeenumber',
+		];
+		$this->oLDAPSearchService->expects($this->once())
+			->method('Search')
+			->with('DC=company,DC=com','(&(objectClass=person)(mail=*))', $aExpectedRes)
+			->willReturn($aSearchResult['persons']);
+
+		$this->iTopPersonLDAPCollector = new \iTopPersonLDAPCollector();
+		$this->iTopPersonLDAPCollector->SetLDAPSearchService($this->oLDAPSearchService);
+
+		$this->iTopPersonLDAPCollector->Prepare();
+
+		$aCollectRes = [];
+		while ($aObjFields = $this->iTopPersonLDAPCollector->Fetch()){
+			$aCollectRes[]=$aObjFields;
+		}
+
+		$aExpectedFirstObject = [
+			'primary_key' => 'jli',
+		    'org_id' => 'Demo',
+		    'status' => 'active',
+		    'name' => 'Li',
+		    'first_name' => 'jet',
+		    'email' => 'jet.li4@combodo.com',
+		    'phone' => '',
+		    'mobile_phone' => '',
+		    'function' => '',
+		    'employee_number' => '',
+		    'notify' => '',
+		    'location_id' => '',
+		    'manager_id' => '',
+		    'vip' => ''
+		];
+		$this->assertEquals(5, sizeof($aCollectRes));
+		$this->assertEquals($aExpectedFirstObject, $aCollectRes[0]);
 	}
 }

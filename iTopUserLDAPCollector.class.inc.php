@@ -94,7 +94,7 @@ class iTopUserLDAPCollector extends AbstractLdapCollector
 
     protected function GetData()
     {
-        $aAttributes = array_values($this->aUserFields);
+	    $aAttributes = $this->GetFieldKeysToSearchOnLDAPSide($this->aUserFields);
         if ($this->sSynchronizeProfiles !== 'no')
         {
             $aAttributes[] = 'memberof';
