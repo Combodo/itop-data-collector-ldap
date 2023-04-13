@@ -47,9 +47,9 @@ JSON;
 JSON;
 
 		return [
-			'exit 0' => [ 'iExitCode' => 0, 'sExpectedJson' => sprintf($sOkJsonOuput, 0) ],
-			'exit 4' => [ 'iExitCode' => 4, 'sExpectedJson' => sprintf($sOkJsonOuput, 4) ],
-			'exit 8' => [ 'iExitCode' => 8, 'sExpectedJson' => $sErrorJsonOuput ],
+			'ok with exit code LDAP_SUCCESS' => [ 'iExitCode' => LDAP_SUCCESS, 'sExpectedJson' => sprintf($sOkJsonOuput, LDAP_SUCCESS) ],
+			'ok with exit code LDAP_SIZELIMIT_EXCEEDED' => [ 'iExitCode' => LDAP_SIZELIMIT_EXCEEDED, 'sExpectedJson' => sprintf($sOkJsonOuput, LDAP_SIZELIMIT_EXCEEDED) ],
+			'ERROR with exit code 8' => [ 'iExitCode' => 8, 'sExpectedJson' => $sErrorJsonOuput ],
 		];
 	}
 

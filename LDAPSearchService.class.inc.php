@@ -31,6 +31,14 @@ if (!defined("LDAP_CONTROL_PAGEDRESULTS")) {
 	define("LDAP_CONTROL_VLVRESPONSE", "2.16.840.1.113730.3.4.10");
 }
 
+if (! defined('LDAP_SUCCESS')){
+	define('LDAP_SUCCESS', 0); // correct way
+}
+
+if (! defined('LDAP_SIZELIMIT_EXCEEDED')){
+	define('LDAP_SIZELIMIT_EXCEEDED', 4); // correct way
+}
+
 /**
  * Base class for LDAP collectors, handles the connexion to LDAP (connect & bind)
  * as well as basic searches

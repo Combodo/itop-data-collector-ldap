@@ -44,7 +44,7 @@ class LDAPCliSearchService {
 		}
 
 		$this->iExitCode = $this->GetLDAPSearchService()->GetLastLdapErrorCode();
-		if (0 === $this->iExitCode||4 === $this->iExitCode){
+		if (LDAP_SUCCESS === $this->iExitCode||LDAP_SIZELIMIT_EXCEEDED === $this->iExitCode){
 			$aOutput = [
 				'count' => $iCount,
 				'code' => $this->iExitCode,
