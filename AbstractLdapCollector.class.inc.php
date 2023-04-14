@@ -19,7 +19,7 @@ class AbstractLdapCollector extends Collector {
 	public function GetLDAPSearchService() : LDAPSearchService
 	{
 		if (is_null($this->oLDAPSearchService)){
-			$this->oLDAPSearchService = new LDAPCollectorService();
+			$this->oLDAPSearchService = new LDAPSearchService();
 		}
 		return $this->oLDAPSearchService;
 	}
