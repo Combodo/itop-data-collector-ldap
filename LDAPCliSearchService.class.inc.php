@@ -33,18 +33,19 @@ class LDAPCliSearchService {
 		$sLdapdn = Utils::GetConfigurationValue('ldapdn', 'DC=company,DC=com');
 
 		$aLdapResults = $this->GetLDAPSearchService()->Search($sLdapdn, $sLdapfilter, $aAttributes);
-		$iCount = count($aLdapResults) - 1;
-		if ("$iSizeLimit" === "-1"){
-			$aRes = $aLdapResults;
-		} else {
-			$aRes = [];
-			for($i=0;$i<$iCount;$i++){
-				$aRes[]=$aLdapResults[$i];
-			}
-		}
-
 		$this->iExitCode = $this->GetLDAPSearchService()->GetLastLdapErrorCode();
+
 		if (LDAP_SUCCESS === $this->iExitCode||LDAP_SIZELIMIT_EXCEEDED === $this->iExitCode){
+			$iCount = count($aLdapResults) - 1;
+			if ("$iSizeLimit" === "-1"){
+				$aRes = $aLdapResults;
+			} else {
+				$aRes = [];
+				for($i=0;$i<$iCount;$i++){
+					$aRes[]=$aLdapResults[$i];
+				}
+			}
+
 			$aOutput = [
 				'count' => $iCount,
 				'code' => $this->iExitCode,

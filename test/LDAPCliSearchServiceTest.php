@@ -49,14 +49,14 @@ JSON;
 		return [
 			'ok with exit code LDAP_SUCCESS' => [ 'iExitCode' => LDAP_SUCCESS, 'sExpectedJson' => sprintf($sOkJsonOuput, LDAP_SUCCESS) ],
 			'ok with exit code LDAP_SIZELIMIT_EXCEEDED' => [ 'iExitCode' => LDAP_SIZELIMIT_EXCEEDED, 'sExpectedJson' => sprintf($sOkJsonOuput, LDAP_SIZELIMIT_EXCEEDED) ],
-			'ERROR with exit code 8' => [ 'iExitCode' => 8, 'sExpectedJson' => $sErrorJsonOuput ],
+			'ERROR with exit code 8' => [ 'iExitCode' => 8, 'sExpectedJson' => $sErrorJsonOuput, 'aSearchRes' => [] ],
 		];
 	}
 
 	/**
 	 * @dataProvider SearchOKProvider
 	 */
-	public function testSearch(int $iExitCode, string $sExpectedJson){
+	public function testSearch(int $iExitCode, string $sExpectedJson, $aSearchRes=['count' => 2, 0 => 'XXX', 1 => 'YYY']){
 		global $argv;
 		$argv[]="--config_file=".$this->sTempConfigFile;
 		$this->assertTrue(copy(__DIR__."/resources/connect-via-uri.xml", $this->sTempConfigFile));
@@ -67,7 +67,7 @@ JSON;
 		$this->oLDAPSearchService->expects($this->once())
 			->method('Search')
 			->with('DC=company,DC=com', $sLdapfilter, $aAttributes)
-			->willReturn(['count' => 2, 0 => 'XXX', 1 => 'YYY']);
+			->willReturn($aSearchRes);
 
 		$this->oLDAPSearchService->expects($this->once())
 			->method('GetLastLdapErrorCode')
