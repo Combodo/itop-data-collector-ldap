@@ -41,6 +41,10 @@ class LDAPCliSearchServiceTest extends AbstractLDAPTest
 		$sOkJsonOuput = <<<JSON
 {"count":2,"code":%s,"titi":["XXX","YYY"],"msg":"GetLastLdapErrorMessageOutput"}
 JSON;
+		$sOkBigJsonOuput = <<<JSON
+{"count":6,"code":%s,"titi":["AA1","AA2","AA3","AA4","AA5"],"msg":"GetLastLdapErrorMessageOutput"}
+JSON;
+		$aBigInput = ['count' => 6, 0 => 'AA1', 1 => 'AA2', 2 => "AA3", 3 => "AA4", 4 => "AA5", 5 => "AA6"];
 
 		$sErrorJsonOuput = <<<JSON
 {"code":8,"msg":"GetLastLdapErrorMessageOutput"}
@@ -48,7 +52,8 @@ JSON;
 
 		return [
 			'ok with exit code LDAP_SUCCESS' => [ 'iExitCode' => LDAP_SUCCESS, 'sExpectedJson' => sprintf($sOkJsonOuput, LDAP_SUCCESS) ],
-			'ok with exit code LDAP_SIZELIMIT_EXCEEDED' => [ 'iExitCode' => LDAP_SIZELIMIT_EXCEEDED, 'sExpectedJson' => sprintf($sOkJsonOuput, LDAP_SIZELIMIT_EXCEEDED) ],
+		    'ok but more than 5 with code LDAP_SUCCESS' => [ 'iExitCode' => LDAP_SUCCESS, 'sExpectedJson' => sprintf($sOkBigJsonOuput, LDAP_SUCCESS), 'aSearchRes' => $aBigInput ],
+		    'ok with exit code LDAP_SIZELIMIT_EXCEEDED' => [ 'iExitCode' => LDAP_SIZELIMIT_EXCEEDED, 'sExpectedJson' => sprintf($sOkJsonOuput, LDAP_SIZELIMIT_EXCEEDED) ],
 			'ERROR with exit code 8' => [ 'iExitCode' => 8, 'sExpectedJson' => $sErrorJsonOuput, 'aSearchRes' => [] ],
 		];
 	}
