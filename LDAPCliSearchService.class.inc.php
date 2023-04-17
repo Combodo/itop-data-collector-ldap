@@ -41,7 +41,7 @@ class LDAPCliSearchService {
 				$aRes = $aLdapResults;
 			} else {
 				$aRes = [];
-				for($i=0;$i<$iCount;$i++){
+				for($i=0;$i<min($iCount, $iSizeLimit);$i++){
 					$aRes[]=$aLdapResults[$i];
 				}
 			}

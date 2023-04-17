@@ -9,7 +9,6 @@
 	<!--ldap_opt_debug_level>7</ldap_opt_debug_level-->
 
 	<!-- Parameters for Person synchronization -->
-	<person_size_limit>-1</person_size_limit>
 	<ldappersonfilter>(&amp;(objectClass=person)(mail=*))</ldappersonfilter>
 
 	<itop_group_pattern>/^CN=itop-(.*),OU=.*/</itop_group_pattern>
@@ -31,7 +30,6 @@
 	</person_defaults>
 
 	<!-- Parameters for User synchronization -->
-	<user_size_limit>-1</user_size_limit>
 	<collect_person_only>no</collect_person_only>
 	<ldapuserfilter>(&amp;(objectClass=person)(mail=*))</ldapuserfilter>
 	<synchronize_profiles>no</synchronize_profiles>
