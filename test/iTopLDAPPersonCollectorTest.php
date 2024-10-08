@@ -7,10 +7,7 @@ use LDAPSearchService;
 use PHPUnit\Framework\TestCase;
 use Utils;
 
-if (! defined('APPROOT')){
-	define('APPROOT', dirname(__FILE__, 3). '/'); // correct way
-}
-
+require_once (__DIR__.'/AbstractLDAPTest.php');
 require_once (__DIR__.'/LdapMockingRessource.php');
 require_once (APPROOT.'collectors/iTopPersonLDAPCollector.class.inc.php');
 
