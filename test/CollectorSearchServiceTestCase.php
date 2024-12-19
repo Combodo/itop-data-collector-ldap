@@ -14,7 +14,7 @@ require_once (APPROOT.'collectors/LDAPSearchService.class.inc.php');
 /**
  * @runClassInSeparateProcess
  */
-class LDAPSearchServiceTest extends AbstractLDAPTest
+class CollectorSearchServiceTestCase extends AbstractLDAPTest
 {
 	private $sTempConfigFile;
 	private $oConnexionResource;

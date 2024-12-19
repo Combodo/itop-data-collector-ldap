@@ -4,7 +4,6 @@ namespace UnitTestFiles\Test;
 
 use LdapMockingRessource;
 use LDAPSearchService;
-use PHPUnit\Framework\TestCase;
 use Utils;
 
 require_once (__DIR__.'/AbstractLDAPTest.php');
@@ -14,7 +13,7 @@ require_once (APPROOT.'collectors/iTopPersonLDAPCollector.class.inc.php');
 /**
  * @runClassInSeparateProcess
  */
-class iTopLDAPPersonCollectorTest extends AbstractLDAPTest
+class iTopCollectorPersonCollectorTestCase extends AbstractLDAPTest
 {
 	private $sTempConfigFile;
 	private $oConnexionResource;

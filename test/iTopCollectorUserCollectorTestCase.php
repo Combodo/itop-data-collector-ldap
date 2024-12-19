@@ -14,7 +14,7 @@ require_once (APPROOT.'collectors/iTopUserLDAPCollector.class.inc.php');
 /**
  * @runClassInSeparateProcess
  */
-class iTopLDAPUserCollectorTest extends AbstractLDAPTest
+class iTopCollectorUserCollectorTestCase extends AbstractLDAPTest
 {
 	private $sTempConfigFile;
 	private $oConnexionResource;
