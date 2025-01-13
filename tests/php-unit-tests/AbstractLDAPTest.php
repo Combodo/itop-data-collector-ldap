@@ -39,6 +39,7 @@ if (! defined('APPROOT')){
 		echo "check file $sPath" . PHP_EOL;
 		if (file_exists($sPath)) {
 			define('APPROOT', dirname($sPath, 2) . DIRECTORY_SEPARATOR);
+			echo "APPROOT: " . APPROOT . '\n';
 			break;
 		} else if (file_exists($sDir.DIRECTORY_SEPARATOR.$sItopApprootFileName)) {
 			//iTop root dir
@@ -68,6 +69,7 @@ if (! defined('APPROOT')){
 			$sPath = SearchFile($sSubDir, $sLdapModuleFileName);
 			if (! is_null($sPath)) {
 				define('APPROOT', dirname($sPath, 2) . DIRECTORY_SEPARATOR);
+				echo "APPROOT: " . APPROOT . '\n';
 				break;
 			}
 	}
