@@ -71,7 +71,7 @@
 			"attcode": "reset_pwd_token",
 			"update": "0",
 			"reconcile": "0",
-			"update_policy": "master_locked",
+			"update_policy": "master_unlocked",
 			"finalclass": "SynchroAttribute"
 		},
 		{
