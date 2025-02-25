@@ -1,4 +1,5 @@
 <?php
+require_once(APPROOT.'collectors/src/LDAPCollector.class.inc.php');
 
 class iTopUserLDAPCollector extends LDAPCollector
 {
