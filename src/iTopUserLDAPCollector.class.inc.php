@@ -85,9 +85,9 @@ class iTopUserLDAPCollector extends LDAPCollector
     
     public function AttributeIsOptional($sAttCode)
     {
-        if ($sAttCode == 'status') return true;
+        if ($sAttCode == 'ldap_server') return true; // depends on the type of User (UserLDAP vs UserExternal)
         if ($sAttCode == 'reset_pwd_token') return true; // depends on the type of User (UserLDAP vs UserExternal)
-        
+
         return parent::AttributeIsOptional($sAttCode);
     }
 
