@@ -20,7 +20,7 @@
 			"attcode": "allowed_org_list",
 			"update": "0",
 			"reconcile": "0",
-			"update_policy": "master_locked",
+			"update_policy": "master_unlocked",
 			"row_separator": "|",
 			"attribute_separator": ";",
 			"value_separator": ":",

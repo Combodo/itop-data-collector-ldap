@@ -20,7 +20,7 @@
 			"attcode": "cis_list",
 			"update": "0",
 			"reconcile": "0",
-			"update_policy": "master_locked",
+			"update_policy": "master_unlocked",
 			"row_separator": "|",
 			"attribute_separator": ";",
 			"value_separator": ":",
@@ -59,7 +59,7 @@
 			"attcode": "location_id",
 			"update": "0",
 			"reconcile": "0",
-			"update_policy": "master_locked",
+			"update_policy": "master_unlocked",
 			"reconciliation_attcode": "name",
 			"finalclass": "SynchroAttExtKey"
 		},
@@ -67,7 +67,7 @@
 			"attcode": "manager_id",
 			"update": "0",
 			"reconcile": "0",
-			"update_policy": "master_locked",
+			"update_policy": "master_unlocked",
 			"reconciliation_attcode": "email",
 			"finalclass": "SynchroAttExtKey"
 		},
@@ -89,7 +89,7 @@
 			"attcode": "notify",
 			"update": "0",
 			"reconcile": "0",
-			"update_policy": "master_locked",
+			"update_policy": "master_unlocked",
 			"finalclass": "SynchroAttribute"
 		},
 		{
@@ -118,7 +118,7 @@
 			"attcode": "team_list",
 			"update": "0",
 			"reconcile": "0",
-			"update_policy": "master_locked",
+			"update_policy": "master_unlocked",
 			"row_separator": "|",
 			"attribute_separator": ";",
 			"value_separator": ":",
