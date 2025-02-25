@@ -36,11 +36,11 @@ class iTopUserLDAPCollector extends LDAPCollector
         // Safety check
         if (!array_key_exists('primary_key', $this->aUserFields))
         {
-            Utils::Log(LOG_ERROR, "LDAPUsers: You MUST specify a mapping for the field:'primary_key'");
+            Utils::Log(LOG_ERR, "LDAPUsers: You MUST specify a mapping for the field:'primary_key'");
         }
         if (!array_key_exists('login', $this->aUserFields))
         {
-            Utils::Log(LOG_ERROR, "LDAPUsers: You MUST specify a mapping for the field:'login'");
+            Utils::Log(LOG_ERR, "LDAPUsers: You MUST specify a mapping for the field:'login'");
         }
         
         // For debugging dump the mapping and default values
