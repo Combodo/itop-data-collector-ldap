@@ -41,12 +41,6 @@
 		<profile>Portal user</profile>
 		<language>EN US</language>
 	</user_defaults>
-	<!--
-		Set a non empty (and unique) prefix if you run several instances of the collector against the same iTop Server
-		This is the recommended method to collect data from several LDAP servers. (assign a unique prefix to each "source" LDAP server)  
-		Note: prefix is defined here since json_placeholders (below) can only reference global parameters
-	-->
-	<prefix></prefix>
 
 	<!-- Class collection sequence -->
 	<collectors_launch_sequence type="array">
@@ -64,12 +58,23 @@
 		</collector>
 	</collectors_launch_sequence>
 
+	<!-- Synchronization parameters -->
+	<contact_to_notify></contact_to_notify>
+	<synchro_user></synchro_user>
+	<!--
+		Set a non empty (and unique) prefix if you run several instances of the collector against the same iTop Server
+		This is the recommended method to collect data from several LDAP servers. (assign a unique prefix to each "source" LDAP server)
+		Note: prefix is defined here since json_placeholders (below) can only reference global parameters
+	-->
+	<prefix></prefix>
 	<json_placeholders>
-		<itopperson_synchro_name>$name_prefix$ Persons $name_postfix$</itopperson_synchro_name>
-		<itopuser_synchro_name>$name_prefix$ Users $name_postfix$</itopuser_synchro_name>
+		<itopperson_synchro_name>$prefix$Synchro LDAP Person</itopperson_synchro_name>
+		<persons_data_table>synchro_data_$prefix$ldap_persons</persons_data_table>
+		<itopuser_synchro_name>$prefix$Synchro Users from LDAP</itopuser_synchro_name>
+		<users_target_class>UserLDAP</users_target_class>
+		<users_data_table>synchro_data_$prefix$ldap_users</users_data_table>
 		<synchro_status>production</synchro_status>
 		<full_load_interval>0</full_load_interval><!-- 7 days (in seconds): 7*24*60*60 -->
-		<users_target_class>UserLDAP</users_target_class>
 		<!-- Following policies may be: master_locked, master_unlocked or write_if_empty
 	        . Use master_locked if you manage the profiles directly in LDAP and let the collector synchronize them in iTop
 	        . Use master_unlock if you don't want the list of profiles to be synchronized
