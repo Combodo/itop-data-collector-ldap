@@ -1,5 +1,5 @@
 {
-	"name": "$prefix$Synchro Users from LDAP",
+	"name": "$itopuser_synchro_name$",
 	"description": "Synchronization of iTop user from LDAP Directory",
 	"status": "$synchro_status$",
 	"user_id": "$synchro_user$",
