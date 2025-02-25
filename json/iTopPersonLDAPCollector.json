@@ -101,6 +101,13 @@
 			"finalclass": "SynchroAttExtKey"
 		},
 		{
+			"attcode": "picture",
+			"update": "0",
+			"reconcile": "0",
+			"update_policy": "master_unlocked",
+			"finalclass": "SynchroAttribute"
+		},
+		{
 			"attcode": "phone",
 			"update": "1",
 			"reconcile": "0",
