@@ -112,8 +112,14 @@ The value should be something like:
     <ldapuri>$sURI</ldapuri>
 TXT
             );
-            Utils::Log(LOG_DEBUG, "ldap_connect('{$this->sHost}', '{$this->sPort}')...");
-            $this->rConnection = ldap_connect($this->sHost, $this->sPort);
+            // ldap_connect call with 2 arguments is deprecated with PHP >= 8.3.0
+            if (version_compare(PHP_VERSION, '8.3.0', '<')) {
+                Utils::Log(LOG_DEBUG, "ldap_connect('{$this->sHost}', '{$this->sPort}')...");
+                $this->rConnection = ldap_connect($this->sHost, $this->sPort);
+            } else {
+                Utils::Log(LOG_DEBUG, "ldap_connect('{$this->sURI}')...");
+                $this->rConnection = ldap_connect($sURI);
+            }
         }
 
 		// Test connection with a bind
