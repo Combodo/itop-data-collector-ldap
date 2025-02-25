@@ -307,7 +307,8 @@ TXT
             Utils::Log(LOG_DEBUG, "ldap_search('$sDN', '$sFilter', ['".implode("', '", $aAttributes)."'])...");
             $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes, 0, 0, 0, LDAP_DEREF_NEVER, [['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => $this->iPageSize, 'cookie' => $cookie]]]);
             
-            $errcode = $matcheddn = $sErrmsg = $referrals = $aControls = null;
+            $errcode = 0;
+            $matcheddn = $sErrmsg = $referrals = $aControls = null;
             @ldap_parse_result($this->rConnection, $rSearch, $errcode , $matcheddn , $sErrmsg , $referrals, $aControls);
             
             if ($errcode !== 0)
