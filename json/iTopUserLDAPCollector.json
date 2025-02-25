@@ -50,6 +50,13 @@
 			"finalclass": "SynchroAttribute"
 		},
 		{
+			"attcode": "log",
+			"update": "0",
+			"reconcile": "0",
+			"update_policy": "master_unlocked",
+			"finalclass": "SynchroAttribute"
+		},
+		{
 			"attcode": "login",
 			"update": "1",
 			"reconcile": "1",
