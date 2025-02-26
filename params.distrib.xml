@@ -82,5 +82,7 @@
 		    -->
 	    <profile_list_update_policy>write_if_empty</profile_list_update_policy>
 	</json_placeholders>
+	<!-- Date format for LDAP collector -->
+	<date_format>Y-m-d</date_format>
 </parameters>
 
