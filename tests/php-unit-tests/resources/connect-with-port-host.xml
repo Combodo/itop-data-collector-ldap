@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<parameters>
+	<ldapuri></ldapuri>
+	<ldaphost>myldap2.fr</ldaphost>
+	<ldapport>666</ldapport>
+	<ldapdn>DC=company,DC=com</ldapdn>
+	<ldaplogin>ldaplogin123</ldaplogin>
+	<ldappassword>ldappassword456</ldappassword>
+</parameters>

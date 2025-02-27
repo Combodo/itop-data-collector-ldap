@@ -1,5 +1,9 @@
 <?php
 
+require_once(APPROOT.'collectors/src/LDAPService.class.inc.php');
+require_once (APPROOT.'core/parameters.class.inc.php');
+require_once (APPROOT.'core/utils.class.inc.php');
+
 if (!defined("LDAP_CONTROL_PAGEDRESULTS")) {
 	define("LDAP_CONTROL_MANAGEDSAIT", "2.16.840.1.113730.3.4.2");
 	define("LDAP_CONTROL_PROXY_AUTHZ", "2.16.840.1.113730.3.4.18");
@@ -31,8 +35,10 @@ if (!defined("LDAP_CONTROL_PAGEDRESULTS")) {
  * Base class for LDAP collectors, handles the connexion to LDAP (connect & bind)
  * as well as basic searches
  */
-class LDAPCollector extends Collector
+class LDAPSearchService
 {
+	protected $oLDAPService;
+
 	protected $sHost;
 	protected $sPort;
 	protected $sURI;
@@ -42,10 +48,17 @@ class LDAPCollector extends Collector
     protected $bBindSuccess = false;
     protected $bPaginationIsSupported = null;
     protected $iPageSize;
-    
+
+	//limit size of ldap resultat list
+    protected $iSizeLimit = -1;
+
+	protected $sLastLdapErrorMessage = null;
+	protected $iLastLdapErrorCode = -1;
+
     public function __construct()
     {
-        parent::__construct();
+	    $this->oLDAPService = new LDAPService();
+
         // let's read the configuration parameters
         // No connection method an URI like ldap://<server>:<port> or ldaps://<server>:<port>
         $this->sURI = Utils::GetConfigurationValue('ldapuri', '');
@@ -58,30 +71,40 @@ class LDAPCollector extends Collector
         // Pagination
         $this->iPageSize = Utils::GetConfigurationValue('page_size', 0);
     }
-    
+
+	/**
+	 * @param \LDAPService $oLDAPService
+	 * used for mock/test only
+	 * @return void
+	 */
+	public function SetLDAPService(LDAPService $oLDAPService)
+    {
+		$this->oLDAPService = $oLDAPService;
+	}
+
     /**
      * Tells if the connexion is already established
      * @return boolean
      */
     private function IsConnected()
     {
-        return $this->bBindSuccess;    
+        return $this->bBindSuccess;
     }
-    
+
     /**
-     * Perform the actual connection to the LDAP server (connect AND bind) 
+     * Perform the actual connection to the LDAP server (connect AND bind)
      * @return boolean
      */
     private function Connect()
     {
         if ($this->IsConnected()) return true;
-        
+
         if ($this->InitLDAP()) {
 			return true;
         }
         return false;
     }
-    
+
     /**
      * Perform just the initialization of the connection parameters (no connection to the LDAP server)
      * @return boolean
@@ -89,17 +112,15 @@ class LDAPCollector extends Collector
     private function InitLDAP()
     {
         if ($this->rConnection !== null) return true;
-        
+
         $this->bBindSuccess = false;
-        
+
 		// Prepare the connection regarding the parameters
         if ($this->sURI !== '') {
             // New syntax for ldapconnect(...)
             Utils::Log(LOG_DEBUG, "ldap_connect('{$this->sURI}')...");
-            $this->rConnection = ldap_connect($this->sURI);
-        }
-        else
-        {
+	        $this->rConnection = $this->oLDAPService->ldap_connect($this->sURI, null, 0);
+        } else {
             // Old syntax for ldapconnect(...)
             $sURI = $this->MakeURI($this->sHost, $this->sPort);
             Utils::Log(LOG_WARNING,
@@ -113,49 +134,56 @@ TXT
             // ldap_connect call with 2 arguments is deprecated with PHP >= 8.3.0
             if (version_compare(PHP_VERSION, '8.3.0', '<')) {
                 Utils::Log(LOG_DEBUG, "ldap_connect('{$this->sHost}', '{$this->sPort}')...");
-                $this->rConnection = ldap_connect($this->sHost, $this->sPort);
+                $this->rConnection = $this->oLDAPService->ldap_connect(null, $this->sHost, $this->sPort);
             } else {
                 Utils::Log(LOG_DEBUG, "ldap_connect('{$this->sURI}')...");
-                $this->rConnection = ldap_connect($sURI);
+                $this->rConnection = $this->oLDAPService->ldap_connect($sURI, '', 0);
             }
         }
 
 		// Test connection with a bind
-	    ldap_set_option($this->rConnection, LDAP_OPT_REFERRALS, 0);
-	    ldap_set_option($this->rConnection, LDAP_OPT_PROTOCOL_VERSION, 3);
+
+	    //LDAP debug
+	    $sLdapOptDebugLevel = Utils::GetConfigurationValue('ldap_opt_debug_level', null);
+	    if (! is_null($sLdapOptDebugLevel) && is_int($sLdapOptDebugLevel)) {
+		    $this->oLDAPService->ldap_set_option($this->rConnection, LDAP_OPT_DEBUG_LEVEL, $sLdapOptDebugLevel);
+	    }
+	    $this->oLDAPService->ldap_set_option($this->rConnection, LDAP_OPT_REFERRALS, 0);
+	    $this->oLDAPService->ldap_set_option($this->rConnection, LDAP_OPT_PROTOCOL_VERSION, 3);
 	    Utils::Log(LOG_DEBUG, "ldap_bind('{$this->sLogin}', '{$this->sPassword}')...");
-	    $this->bBindSuccess = @ldap_bind($this->rConnection, $this->sLogin, $this->sPassword);
-        if ($this->bBindSuccess === false)
-        {
+	    $this->bBindSuccess = $this->oLDAPService->ldap_bind($this->rConnection, $this->sLogin, $this->sPassword);
+	    $this->sLastLdapErrorMessage = $this->oLDAPService->ldap_error($this->rConnection);
+	    $this->iLastLdapErrorCode = $this->oLDAPService->ldap_errno($this->rConnection);
+        if ($this->bBindSuccess === false) {
 		    Utils::Log(LOG_ERR, "ldap_bind to {$this->sURI} failed, check your LDAP connection parameters (<ldapxxx>)!");
-		    Utils::Log(LOG_ERR, "ldap_bind('{$this->sLogin}', '{$this->sPassword}') FAILED (".ldap_error($this->rConnection).").");
+	        Utils::Log(LOG_ERR, "ldap_bind('{$this->sLogin}', '{$this->sPassword}') FAILED (".$this->sLastLdapErrorMessage.").");
             return false;
         }
 	    Utils::Log(LOG_DEBUG, "ldap_bind() Ok.");
 
 	    // Check if pagination is supported
-        if ($this->PaginationIsSupported(true))
-        {
+        if ($this->PaginationIsSupported(true)) {
             Utils::Log(LOG_INFO, "Pagination of results is supported by the LDAP server.");
-            if ($this->iPageSize > 0)
-            {
+            if ($this->iPageSize > 0) {
                 Utils::Log(LOG_INFO, "Results will be retrieved by pages of {$this->iPageSize} elements.");
-            }
-            else
-            {
+            } else {
                 Utils::Log(LOG_INFO, "Consider setting the parameter <page_size> to a value greater than zero in the configuration file in order to use pagination.");
             }
-        }
-        else 
-        {
-            if ($this->iPageSize > 0)
-            {
+        } else {
+            if ($this->iPageSize > 0) {
                 Utils::Log(LOG_WARNING, "The parameter <page_size> will be ignored.");
             }
         }
         return true;
     }
-    
+
+	public function ConnectAndDisconnect() : void
+	{
+		if ($this->Connect()) {
+			$this->Disconnect();
+		}
+	}
+
     /**
      * Try to build a meaningful LDAP URI from the 2 parameters given
      * @param string $sHost
@@ -164,47 +192,41 @@ TXT
      */
     private function MakeURI($sHost, $sPort)
     {
-        if (preg_match('@^(ldap://|ldaps://)@', $sHost))
-        {
-            if ($sPort != '')
-            {
+        if (preg_match('@^(ldap://|ldaps://)@', $sHost)) {
+            if ($sPort != '') {
                 return "$sHost:$sPort";
             }
             return $sHost;
-        }
-        else
-        {
-            if ($sPort != '389')
-            {
+        } else {
+            if ($sPort != '389') {
                 return "ldaps://$sHost:$sPort";
             }
             return "ldap://$sHost";
         }
     }
-    
+
     /**
      * Closes the connexion to the LDAP server
      * @return void
      */
     private function Disconnect()
     {
-        ldap_close($this->rConnection);
+	    $this->oLDAPService->ldap_close($this->rConnection);
         $this->rConnection = null;
         $this->bBindSuccess = false;
     }
 
     private function PaginationIsSupported($bLogStatus = false)
     {
-        if ($this->bPaginationIsSupported === null)
-        {
+        if ($this->bPaginationIsSupported === null) {
 	        if (version_compare(PHP_VERSION, '7.3.0') < 0) {
 		        $this->bPaginationIsSupported = false;
 		        if ($bLogStatus && ($this->iPageSize > 0)) {
 			        Utils::Log(LOG_WARNING, "PHP 7.3.0 or above is needed to support pagination");
 		        }
 	        } else {
-		        $result = ldap_read($this->rConnection, '', '(objectClass=*)', ['supportedControl']);
-		        $aData = ldap_get_entries($this->rConnection, $result);
+		        $result = $this->oLDAPService->ldap_read($this->rConnection, '', '(objectClass=*)', ['supportedControl']);
+		        $aData = $this->oLDAPService->ldap_get_entries($this->rConnection, $result);
 		        $aControls = $this->LdapControlsToLabels($aData[0]['supportedcontrol']);
 
 		        Utils::Log(LOG_DEBUG, "Supported controls: ".implode(', ', $aControls).".");
@@ -255,18 +277,15 @@ TXT
         foreach($aControls as $key => $sControl)
         {
             if ($key == 'count') continue;
-            if (array_key_exists($sControl, $aWellKnownControls))
-            {
+            if (array_key_exists($sControl, $aWellKnownControls)) {
                 $aHumanReadableControls[] = $aWellKnownControls[$sControl];
-            }
-            else 
-            {
+            } else {
                 $aHumanReadableControls[] = $sControl;
             }
         }
         return $aHumanReadableControls;
     }
-   
+
     /**
      * Perform a search with the given parameters, also manages the connexion to the server
      * @param string $sDN The DN of the base object to search under
@@ -276,68 +295,62 @@ TXT
      */
     public function Search($sDN, $sFilter, $aAttributes = array('*'))
     {
-        if ($this->Connect())
-        {
-            if ($this->PaginationIsSupported() && ($this->iPageSize > 0))
-            {
+        if ($this->Connect()) {
+            if ($this->PaginationIsSupported() && ($this->iPageSize > 0)) {
                 return $this->PaginatedSearch($sDN, $sFilter, $aAttributes);
-            }
-            else
-            {
+            } else {
                 Utils::Log(LOG_DEBUG, "ldap_search('$sDN', '$sFilter', ['".implode("', '", $aAttributes)."'])...");
-                $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes);
-                if ($rSearch === false)
-                {
-                    Utils::Log(LOG_ERR, "ldap_search('$sDN', '$sFilter') FAILED (".ldap_error($this->rConnection).").");
+                $rSearch = $this->oLDAPService->ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes, 0, $this->iSizeLimit);
+
+	            $this->oLDAPService->ldap_count_entries($this->rConnection, $rSearch);
+	            $this->sLastLdapErrorMessage = $this->oLDAPService->ldap_error($this->rConnection);
+	            $this->iLastLdapErrorCode = $this->oLDAPService->ldap_errno($this->rConnection);
+                if ($rSearch === false) {
+                    Utils::Log(LOG_ERR, "ldap_search('$sDN', '$sFilter') FAILED (".$this->sLastLdapErrorMessage.").");
                     return false;
                 }
                 Utils::Log(LOG_DEBUG, "ldap_search() Ok.");
-                
-                $aList = ldap_get_entries($this->rConnection, $rSearch);
+
+                $aList = $this->oLDAPService->ldap_get_entries($this->rConnection, $rSearch);
                 $this->Disconnect();
                 return $aList;
             }
         }
         return false;
     }
-    
+
     private function PaginatedSearch($sDN, $sFilter, $aAttributes = array('*'))
     {
         $cookie = '';
         $aData = array('count' => 0);
 
-        do
-        {
+        do {
             Utils::Log(LOG_DEBUG, "ldap_search('$sDN', '$sFilter', ['".implode("', '", $aAttributes)."'])...");
-            $rSearch = @ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes, 0, 0, 0, LDAP_DEREF_NEVER, [['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => $this->iPageSize, 'cookie' => $cookie]]]);
-            
+            $rSearch = $this->oLDAPService->ldap_search($this->rConnection, $sDN, $sFilter, $aAttributes, 0, $this->iSizeLimit, 0, LDAP_DEREF_NEVER, [['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => $this->iPageSize, 'cookie' => $cookie]]]);
+
             $errcode = 0;
             $matcheddn = $sErrmsg = $referrals = $aControls = null;
-            @ldap_parse_result($this->rConnection, $rSearch, $errcode , $matcheddn , $sErrmsg , $referrals, $aControls);
-            
-            if ($errcode !== 0)
-            {
-                Utils::Log(LOG_ERR, "ldap_search('$sDN', '$sFilter') FAILED (".ldap_error($this->rConnection).").");
+	        $this->oLDAPService->ldap_parse_result($this->rConnection, $rSearch, $errcode , $matcheddn , $sErrmsg , $referrals, $aControls);
+	        $this->sLastLdapErrorMessage = $sErrmsg;
+	        $this->iLastLdapErrorCode = $errcode;
+            if ($errcode !== 0) {
+                Utils::Log(LOG_ERR, "ldap_search('$sDN', '$sFilter') FAILED (".$this->sLastLdapErrorMessage.").");
                 return false;
             }
 
-            $aList = ldap_get_entries($this->rConnection, $rSearch);
-            foreach($aList as $values)
-            {
-                if (is_array($values)) // ignore the first element of the results: 'count' => <number>
-                {
+            $aList = $this->oLDAPService->ldap_get_entries($this->rConnection, $rSearch);
+            foreach($aList as $values) {
+                if (is_array($values)) {
+                    // ignore the first element of the results: 'count' => <number>
                     $aData[] = $values;
                     $aData['count']++;
                 }
             }
 
-            if (isset($aControls[LDAP_CONTROL_PAGEDRESULTS]['value']['cookie']))
-            {
+            if (isset($aControls[LDAP_CONTROL_PAGEDRESULTS]['value']['cookie'])) {
                 // You need to pass the cookie from the last call to the next one
                 $cookie = $aControls[LDAP_CONTROL_PAGEDRESULTS]['value']['cookie'];
-            }
-            else
-            {
+            } else {
                 $cookie = '';
             }
             // Empty cookie means last page
@@ -346,4 +359,22 @@ TXT
 
         return $aData;
     }
+
+	/**
+	 * @return string | null
+	 */
+	public function GetLastLdapErrorMessage()
+    {
+		return $this->sLastLdapErrorMessage;
+	}
+
+	public function GetLastLdapErrorCode(): int
+    {
+		return $this->iLastLdapErrorCode;
+	}
+
+	public function SetSizeLimit(int $iSizeLimit)
+    {
+		$this->iSizeLimit = $iSizeLimit;
+	}
 }

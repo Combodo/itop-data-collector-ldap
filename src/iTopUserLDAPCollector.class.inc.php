@@ -1,9 +1,8 @@
 <?php
-require_once(APPROOT.'collectors/src/LDAPCollector.class.inc.php');
+require_once(APPROOT.'collectors/src/AbstractLDAPCollector.class.inc.php');
 
-class iTopUserLDAPCollector extends LDAPCollector
+class iTopUserLDAPCollector extends AbstractLDAPCollector
 {
-
     protected $idx;
     protected $sLDAPDN;
     protected $sLDAPFilter;
@@ -34,50 +33,39 @@ class iTopUserLDAPCollector extends LDAPCollector
         $this->idx = 0;
         
         // Safety check
-        if (!array_key_exists('primary_key', $this->aUserFields))
-        {
+        if (!array_key_exists('primary_key', $this->aUserFields)) {
             Utils::Log(LOG_ERR, "LDAPUsers: You MUST specify a mapping for the field:'primary_key'");
         }
-        if (!array_key_exists('login', $this->aUserFields))
-        {
+        if (!array_key_exists('login', $this->aUserFields)) {
             Utils::Log(LOG_ERR, "LDAPUsers: You MUST specify a mapping for the field:'login'");
         }
         
         // For debugging dump the mapping and default values
         $sMapping = '';
-        foreach($this->aUserFields as $sAttCode => $sField)
-        {
-            if (array_key_exists($sAttCode, $this->aUserDefaults))
-            {
+        foreach($this->aUserFields as $sAttCode => $sField) {
+            if (array_key_exists($sAttCode, $this->aUserDefaults)) {
                 $sDefaultValue = ", default value: '{$this->aUserDefaults[$sAttCode]}'";
-            }
-            else
-            {
+            } else {
                 $sDefaultValue = '';
             }
             $sMapping .= "   iTop '$sAttCode' is filled from LDAP '$sField' $sDefaultValue\n";
         }
-        if (($this->sSynchronizeProfiles !== 'no'))
-        {
+        if (($this->sSynchronizeProfiles !== 'no')) {
             $sMapping .= "   iTop 'profile_list' is filled from LDAP 'memberof' using the regular expression {$this->sITopGroupPattern} to extract the name of the iTop profile\n";
         }
         
         $bDefaultProfilesListProvided = false;
-        foreach($this->aUserDefaults as $sAttCode => $sDefaultValue)
-        {
+        foreach($this->aUserDefaults as $sAttCode => $sDefaultValue) {
             if ($sAttCode == 'profile') continue; // profile is not a real attribute code
-            if ($sAttCode == 'profile_list')
-            {
+            if ($sAttCode == 'profile_list') {
                 $bDefaultProfilesListProvided = true;
             }
             
-            if (!array_key_exists($sAttCode, $this->aUserFields))
-            {
+            if (!array_key_exists($sAttCode, $this->aUserFields)) {
                 $sMapping .= "   iTop '$sAttCode' is filled with the constant value '$sDefaultValue'\n";
             }
         }
-        if ((!$bDefaultProfilesListProvided) && ($this->sSynchronizeProfiles == 'no'))
-        {
+        if ((!$bDefaultProfilesListProvided) && ($this->sSynchronizeProfiles == 'no')) {
             $sMapping .= "   iTop 'profile_list' is filled with the constant value 'profileid->name:".$this->aUserDefaults['profile']."'\n";
         }
         Utils::Log(LOG_DEBUG, "LDAPUsers: Mapping of the fields:\n$sMapping");
@@ -94,14 +82,12 @@ class iTopUserLDAPCollector extends LDAPCollector
     protected function GetData()
     {
         $aAttributes = array_values($this->aUserFields);
-        if ($this->sSynchronizeProfiles !== 'no')
-        {
+        if ($this->sSynchronizeProfiles !== 'no') {
             $aAttributes[] = 'memberof';
         }
-        $aList = $this->Search($this->sLDAPDN, $this->sLDAPFilter, $aAttributes);
-        
-        if ($aList !== false)
-        {
+        $aList = $this->GetLDAPSearchService()->Search($this->sLDAPDN, $this->sLDAPFilter, $aAttributes);
+
+        if ($aList !== false) {
             $iNumberOfUsers = count($aList) - 1;
             Utils::Log(LOG_INFO,"(Users) Number of entries found on LDAP: ".$iNumberOfUsers);
         }
@@ -117,26 +103,22 @@ class iTopUserLDAPCollector extends LDAPCollector
 
         if (! $aData = $this->GetData()) return false;
         
-        foreach ($aData as $idx => $aPerson)
-        {
-            if (isset($aPerson[$this->aUserFields['primary_key']][0]) && $aPerson[$this->aUserFields['primary_key']][0] != "")
-            {
+        foreach ($aData as $idx => $aPerson) {
+            if (isset($aPerson[$this->aUserFields['primary_key']][0]) && $aPerson[$this->aUserFields['primary_key']][0] != "") {
                 $aValues = array();
                 
                 // Primary key must be the first column
                 $aValues['primary_key'] = $aPerson[$this->aUserFields['primary_key']][0];
                 
                 // First set the default values (as well as the constant values for fields which are not collected)
-                foreach($this->aUserDefaults as $sFieldCode => $sValue)
-                {
+                foreach($this->aUserDefaults as $sFieldCode => $sValue) {
                     if ($sFieldCode == 'profile') continue; // Not an actual field code, see below for filling the list of profiles
                     
                     $aValues[$sFieldCode] = $sValue;
                 }
  
                 // Then read the actual values (if any)
-                foreach($this->aUserFields as $sFieldCode => $sLDAPAttribute)
-                {
+                foreach($this->aUserFields as $sFieldCode => $sLDAPAttribute) {
                     if ($sFieldCode == 'primary_key') continue; // Aalready processed, must be the first column
                     
                     $sDefaultValue = isset($this->aUserDefaults[$sFieldCode]) ? $this->aUserDefaults[$sFieldCode] : '';
@@ -147,22 +129,15 @@ class iTopUserLDAPCollector extends LDAPCollector
                 
                 // Collecting list of "member of group" starting with the given pattern
                 $sProfileList = '';
-                if ($this->sSynchronizeProfiles != 'no')
-                {
+                if ($this->sSynchronizeProfiles != 'no') {
                     $sPattern = $this->sITopGroupPattern;
                     
-                    if (isset($aPerson['memberof']) && ($aPerson['memberof']['count'] != 0))
-                    {
-                        foreach ($aPerson['memberof'] as $sMember)
-                        {
-                            if (preg_match($sPattern, $sMember, $aProfile))
-                            {
-                                if ($sProfileList == '')
-                                {
+                    if (isset($aPerson['memberof']) && ($aPerson['memberof']['count'] != 0)) {
+                        foreach ($aPerson['memberof'] as $sMember) {
+                            if (preg_match($sPattern, $sMember, $aProfile)) {
+                                if ($sProfileList == '') {
                                     $sProfileList .= 'profileid->name:'.$aProfile[1];
-                                }
-                                else
-                                {
+                                } else {
                                     $sProfileList .= '|profileid->name:'.$aProfile[1];
                                 }
                             }
@@ -172,18 +147,14 @@ class iTopUserLDAPCollector extends LDAPCollector
                 }
                 
                 // Make sure that the list of profiles is never empty since it is mandatory for a user to have at least one profile
-                if ((!isset($aValues['profile_list'])) || ($aValues['profile_list'] == ''))
-                {
+                if ((!isset($aValues['profile_list'])) || ($aValues['profile_list'] == '')) {
                     $aValues['profile_list'] = "profileid->name:".$this->aUserDefaults['profile'];
                 }
                 
                 $this->aLogins[] = $aValues;
-            }
-            else
-            {
+            } else {
                 // the first row of the results contains the 'count', it's Ok to ignore it, but for others rows, let's report it
-                if ($idx !== 'count')
-                {
+                if ($idx !== 'count') {
                     Utils::Log(LOG_WARNING,"Skipping row #{$idx} because of lack of primary key. Is {$this->aUserFields['primary_key']} the right field to use as a primary key?");
                 }
             }
@@ -193,8 +164,7 @@ class iTopUserLDAPCollector extends LDAPCollector
 
     public function Fetch()
     {
-        if ($this->idx < count($this->aLogins))
-        {
+        if ($this->idx < count($this->aLogins)) {
             $aLogin = $this->aLogins[$this->idx];
             $this->idx++;
             
