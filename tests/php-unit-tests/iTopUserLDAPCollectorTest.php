@@ -50,6 +50,9 @@ class iTopUserLDAPCollectorTest extends AbstractLDAPTestCase
 		];
 	}
 
+    /**
+     * @dataProvider ConnectProvider
+     */
     #[DataProvider('ConnectProvider')]
     public function testPreviousCollectFilesAreRemovedDuringPrepare($bSuccessBehaviourConfiguredInMock, $bLdapBindOk=true, $bDefineGetEntriesBehaviour=true, $sFileName='connect-via-uri.xml', $sUri='ldap://myldap.fr', $sPort='389'){
 		global $argv;

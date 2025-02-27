@@ -51,6 +51,9 @@ class LDAPSearchServiceTest extends AbstractLDAPTestCase
 		];
 	}
 
+    /**
+     * @dataProvider ConnectProvider
+     */
     #[DataProvider('ConnectProvider')]
     public function testConnect($bSuccessBehaviourConfiguredInMock, $bLdapBindOk=true, $bDefineGetEntriesBehaviour=true, $sFileName='connect-via-uri.xml', $sUri='ldap://myldap.fr', $sPort='389')
     {
@@ -139,6 +142,9 @@ class LDAPSearchServiceTest extends AbstractLDAPTestCase
 		];
 	}
 
+    /**
+     * @dataProvider ConnectAndDisconnectProvider
+     */
     #[DataProvider('ConnectAndDisconnectProvider')]
 	public function testConnectAndThenDisconnectOK($sErrorMsg, $iErrorNo, $bLdapBindOk=true)
     {
@@ -187,6 +193,9 @@ class LDAPSearchServiceTest extends AbstractLDAPTestCase
 		];
 	}
 
+    /**
+     * @dataProvider SearchWithoutPaginationProvider
+     */
     #[DataProvider('SearchWithoutPaginationProvider')]
 	public function testSearchWithoutPaginationKO($aAttributes)
     {
@@ -229,6 +238,9 @@ class LDAPSearchServiceTest extends AbstractLDAPTestCase
 		$this->assertEquals($sErrorMsg, $this->LDAPSearchService->GetLastLdapErrorMessage());
 	}
 
+    /**
+     * @dataProvider SearchWithoutPaginationProvider
+     */
     #[DataProvider('SearchWithoutPaginationProvider')]
     public function testSearchWithoutPaginationOK($aAttributes)
     {
