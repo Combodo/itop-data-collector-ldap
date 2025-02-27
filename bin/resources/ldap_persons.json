@@ -1,0 +1,26 @@
+{
+  "count": 15,
+  "code": 0,
+  "persons": [
+    {
+      "givenname": {
+        "count": 1,
+        "0": "jet"
+      },
+      "0": "givenname",
+      "sn": {
+        "count": 1,
+        "0": "Li"
+      },
+      "1": "sn",
+      "mail": {
+        "count": 1,
+        "0": "jet.li4@combodo.com"
+      },
+      "2": "mail",
+      "count": 3,
+      "dn": "cn=jet Li,ou=utilisateurs,dc=combodo,dc=com"
+    }
+  ],
+  "msg": "Success"
+}
