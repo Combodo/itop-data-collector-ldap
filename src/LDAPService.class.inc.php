@@ -10,7 +10,7 @@ class LDAPService
 	 * @return false|resource
 	 */
     public function ldap_connect(?string $uri, ?string $host, int $port = 389) {
-        if ($uri != '') {
+        if (!is_null($uri) && ($uri != '')) {
             return ldap_connect($uri);
         } else {
             return ldap_connect($host, $port);
