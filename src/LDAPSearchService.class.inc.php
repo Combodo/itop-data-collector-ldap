@@ -134,7 +134,7 @@ TXT
             // ldap_connect call with 2 arguments is deprecated with PHP >= 8.3.0
             if (version_compare(PHP_VERSION, '8.3.0', '<')) {
                 Utils::Log(LOG_DEBUG, "ldap_connect('{$this->sHost}', '{$this->sPort}')...");
-                $this->rConnection = $this->oLDAPService->ldap_connect(null, $this->sHost, $this->sPort);
+                $this->rConnection = $this->oLDAPService->ldap_connect($sURI, $this->sHost, $this->sPort);
             } else {
                 Utils::Log(LOG_DEBUG, "ldap_connect('{$this->sURI}')...");
                 $this->rConnection = $this->oLDAPService->ldap_connect($sURI, '', 0);
