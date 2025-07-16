@@ -5,7 +5,7 @@
 
 define('APPROOT', dirname(__FILE__, 3). '/'); // correct way
 
-require_once (APPROOT.'collectors/LDAPSearchService.class.inc.php');
+require_once (APPROOT.'collectors/src/LDAPSearchService.class.inc.php');
 
 $aOptionalParams = [
 	'help' => 'boolean',

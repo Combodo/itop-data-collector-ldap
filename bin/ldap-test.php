@@ -7,7 +7,7 @@
 
 define('APPROOT', dirname(dirname(dirname(__FILE__))) . '/');
 
-require_once (APPROOT.'collectors/LDAPSearchService.class.inc.php');
+require_once (APPROOT.'collectors/src/LDAPSearchService.class.inc.php');
 
 Utils::$iConsoleLogLevel = LOG_DEBUG; // Force debug mode
 
