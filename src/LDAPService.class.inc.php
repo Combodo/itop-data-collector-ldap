@@ -107,7 +107,7 @@ class LDAPService
 	 *
 	 * @return false|resource
 	 */
-	public function ldap_search($ldap, $base, $filter, array $attributes = [], int $attributes_only = 0, int $sizelimit = -1, int $timelimit = -1, int $deref = 0, array $controls = null)
+	public function ldap_search($ldap, $base, $filter, array $attributes = [], int $attributes_only = 0, int $sizelimit = -1, int $timelimit = -1, int $deref = 0, ?array $controls = null)
     {
 		if (is_null($controls)){
 			return ldap_search($ldap, $base, $filter, $attributes, $attributes_only, $sizelimit, $timelimit, $deref);
