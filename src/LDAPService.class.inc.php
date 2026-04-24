@@ -18,7 +18,7 @@ class LDAPService
     }
 
 	/**
-	 * @param false|resource $ldap
+	 * @param false|resource|null $ldap
 	 * @param int $option
 	 * @param $value
 	 *
