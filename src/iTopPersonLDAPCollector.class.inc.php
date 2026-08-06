@@ -93,13 +93,32 @@ class iTopPersonLDAPCollector extends AbstractLDAPCollector
 
                 // Then read the actual values (if any)
                 foreach($this->aPersonFields as $sFieldCode => $sLDAPAttribute) {
-                    if ($sFieldCode == 'primary_key') continue; // Already processed, must be the first column
+					if ($sFieldCode == 'primary_key') continue;
 
-                    $sDefaultValue = isset($this->aPersonDefaults[$sFieldCode]) ? $this->aPersonDefaults[$sFieldCode] : '';
-                    $sFieldValue = isset($aPerson[$sLDAPAttribute][0]) ? $aPerson[$sLDAPAttribute][0] : $sDefaultValue;
+					$sDefaultValue = isset($this->aPersonDefaults[$sFieldCode]) ? $this->aPersonDefaults[$sFieldCode] : '';
+					$sFieldValue = isset($aPerson[$sLDAPAttribute][0]) ? $aPerson[$sLDAPAttribute][0] : $sDefaultValue;
 
-                    $aValues[$sFieldCode] = $sFieldValue;
-                }
+					if ($sFieldCode == 'manager_id') {
+						if (isset($aPerson[$sLDAPAttribute][0])) {
+							$managerDN = $aPerson[$sLDAPAttribute][0];
+
+							// 🔥 LDAP lookup după manager
+							$aManager = $this->GetLDAPSearchService()->Search(
+								$managerDN,
+								'(objectClass=*)',
+								['mail']
+							);
+
+							if ($aManager && isset($aManager[0]['mail'][0])) {
+								$sFieldValue = $aManager[0]['mail'][0]; // email manager
+							} else {
+								$sFieldValue = '';
+							}
+						}
+					}
+
+					$aValues[$sFieldCode] = $sFieldValue;
+				}
                 $this->aPersons[] = $aValues;
             }
         }
