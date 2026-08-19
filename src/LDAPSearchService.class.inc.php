@@ -116,10 +116,10 @@ class LDAPSearchService
         $this->bBindSuccess = false;
 
 		//LDAP debug
-		$sLdapOptDebugLevel = Utils::GetConfigurationValue('ldap_opt_debug_level', null);
-		if (! is_null($sLdapOptDebugLevel) && is_int($sLdapOptDebugLevel)) {
-			$this->oLDAPService->ldap_set_option(null, LDAP_OPT_DEBUG_LEVEL, $sLdapOptDebugLevel);
-		}
+		$iLdapOptDebugLevel = (int)Utils::GetConfigurationValue('ldap_opt_debug_level', null);
+		if ($iLdapOptDebugLevel !== 0) {
+			$this->oLDAPService->ldap_set_option(null, LDAP_OPT_DEBUG_LEVEL, $iLdapOptDebugLevel);
+        }
 
 		// Prepare the connection regarding the parameters
         if ($this->sURI !== '') {
